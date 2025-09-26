@@ -11,11 +11,10 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-resource "aws_s3_bucket" "terraform_state" {
-  bucket = "tf-state-test"
+resource "aws_s3_bucket" "tfstate" {
+  bucket = "example-module"
 
-  lifecycle {
-    prevent_destroy = true
+  tags = {
+    Name = "terraform-state"
   }
-
 }
