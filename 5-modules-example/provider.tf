@@ -15,7 +15,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "example-module"     # existing bucket
+    bucket         = "learning-bucket"    # existing bucket
     key            = "terraform-module/test/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
