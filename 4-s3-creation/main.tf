@@ -12,10 +12,10 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "tfstate" {
-  bucket = "example-module"
+  bucket = "learning-bucket"
   force_destroy = true
 
   tags = {
-    Name = "terraform-state"
+    Name = "learning-bucket"
   }
 }
