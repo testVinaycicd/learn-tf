@@ -3,13 +3,6 @@ provider "aws" {
 }
 
 
-resource "aws_s3_bucket" "tfstate" {
-  bucket = "example-module"
-
-  tags = {
-    Name = "terraform-state"
-  }
-}
 
 terraform {
   required_version = ">= 1.5, < 2.0"
@@ -24,7 +17,7 @@ terraform {
   backend "s3" {
     bucket         = "example-module"     # existing bucket
     key            = "terraform-module/test/terraform.tfstate"
-    region         = "eu-west-1"
+    region         = var.aws_region
     encrypt        = true
     use_lockfile   = true
   }
