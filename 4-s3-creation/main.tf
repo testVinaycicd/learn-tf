@@ -4,10 +4,10 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "tfstate" {
-  bucket = "learning-bucket"
+  bucket = "learning-bucket-307"
   force_destroy = true
 
   tags = {
-    Name = "learning-bucket"
+    Name = "learning-bucket-307"
   }
 }
