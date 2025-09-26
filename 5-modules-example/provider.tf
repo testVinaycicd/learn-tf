@@ -17,7 +17,7 @@ terraform {
   backend "s3" {
     bucket         = "example-module"     # existing bucket
     key            = "terraform-module/test/terraform.tfstate"
-    region         = var.aws_region
+    region         = "eu-west-1"
     encrypt        = true
     use_lockfile   = true
   }
