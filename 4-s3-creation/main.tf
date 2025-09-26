@@ -8,11 +8,12 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-west-1"
+  region = "us-east-1"
 }
 
 resource "aws_s3_bucket" "tfstate" {
   bucket = "example-module"
+  force_destroy = true
 
   tags = {
     Name = "terraform-state"
