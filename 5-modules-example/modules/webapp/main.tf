@@ -9,6 +9,10 @@ resource "aws_instance" "ec2_example" {
 
   vpc_security_group_ids = [aws_security_group.main.id]
 
+  tags = {
+    Name = var.name
+  }
+
   user_data = <<-EOF
       #!/bin/sh
       sudo apt-get update
