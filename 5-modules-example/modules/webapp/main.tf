@@ -1,10 +1,16 @@
-terraform {
-  required_version = ">=0.12"
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-2.0.*-x86_64-gp2"]
+  }
 }
 
 resource "aws_instance" "ec2_example" {
 
-  ami = "ami-09c813fb71547fc4f"
+  ami = data.aws_ami.amazon_linux.id
   instance_type = var.instance_type
 
   vpc_security_group_ids = [aws_security_group.main.id]
