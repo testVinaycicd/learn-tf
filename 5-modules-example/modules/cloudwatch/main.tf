@@ -7,7 +7,9 @@ resource "aws_cloudwatch_log_group" "web_instance" {
 resource "aws_cloudwatch_log_metric_filter" "http_5xx" {
   name           = "${var.name}-5xx-filter"
   log_group_name = aws_cloudwatch_log_group.web_instance.name
-  pattern        = "\" 5[0-9][0-9] "   # adjust depending on log format
+  # Use wildcards instead of regex
+  pattern        = "\" 5?? \""
+
   metric_transformation {
     name      = "${var.name}_5xx_count"
     namespace = "MyApp"
@@ -25,9 +27,10 @@ resource "aws_cloudwatch_metric_alarm" "high_5xx" {
   statistic           = "Sum"
   threshold           = 5
 
-  alarm_description = "Alarm when 5xx count is high"
-  insufficient_data_actions = []
+  alarm_description           = "Alarm when 5xx count is high"
+  insufficient_data_actions   = []
 }
+
 
 
 resource "aws_cloudwatch_metric_alarm" "high_cpu_cwagent" {
