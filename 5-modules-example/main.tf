@@ -34,3 +34,10 @@ module "obs_web1" {
   name             = "${var.name}-web1"
   ec2_instance_id  = module.web_server_1.public_ip
 }
+
+module "route53_acm" {
+  source = "./modules/route53"
+  alb_arn = module.alb.alb_arn
+  alb_dns_name = module.alb.alb_dns_name
+  aws_lb_target_group = module.alb.alb_target_gp_arn
+}
