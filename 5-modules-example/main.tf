@@ -29,8 +29,8 @@ module "alb" {
   vpc_id = module.vpc.vpc_id
 }
 
-# module "obs_web1" {
-#   source           = "./modules/cloudwatch"
-#   name             = "${var.name}-web1"
-#   ec2_instance_id  = module.web_server_1.public_ip
-# }
+module "obs_web1" {
+  source           = "./modules/cloudwatch"
+  name             = "${var.name}-web1"
+  ec2_instance_id  = module.web_server_1.public_ip
+}
