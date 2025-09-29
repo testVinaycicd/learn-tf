@@ -11,7 +11,7 @@ module "iam" {
 }
 
 
-module "web-server-1" {
+module "web_server_1" {
   source = "./modules/webapp"
   instance_type = var.instance_type
   name = "test-1-1-1-1"
@@ -25,6 +25,6 @@ module "alb" {
   source = "./modules/alb"
   name = var.name
   subnets = module.vpc.public_subnets
-  target_instance_ids = [module.web-server-1.public_ip]
+  target_instance_ids = [module.web_server_1.public_ip]
   vpc_id = module.vpc.vpc_id
 }

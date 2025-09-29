@@ -14,4 +14,7 @@ variable "azs" {
 variable "name" {}
 variable "subnet_id" {}
 variable "security_group" {}
-variable "iam_instance_profile" {}
+variable "iam_instance_profile" {
+  type    = string
+  default = ""
+}
