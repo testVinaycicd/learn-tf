@@ -5,14 +5,7 @@ terraform {
       version = ">= 5.81.0, <= 5.100.0"   # or "5.100.0"
     }
   }
-}
 
-provider "aws" {
-  region = var.aws_region
-}
-
-
-terraform {
   backend "s3" {
     bucket = "learning-bucket-307"    # existing bucket
     key          = "terraform-module/test/terraform.tfstate"
@@ -20,6 +13,7 @@ terraform {
     encrypt      = true
     use_lockfile = true
   }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -27,5 +21,12 @@ terraform {
     }
   }
 }
+
+
+provider "aws" {
+  region = var.aws_region
+}
+
+
 
 
