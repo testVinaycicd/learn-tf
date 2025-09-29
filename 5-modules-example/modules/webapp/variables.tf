@@ -1,4 +1,4 @@
-variable "name" { type = string, default = "demo" }
+variable "name" { type = string }
 variable "instance_type" { }
 
 variable "subnet_id" {}
