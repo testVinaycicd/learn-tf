@@ -71,6 +71,15 @@ resource "aws_lb_listener" "http" {
     }
   }
 }
+resource "aws_security_group_rule" "alb_https_in" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  ipv6_cidr_blocks  = ["::/0"]
+  security_group_id = aws_security_group.alb-sg.id
+}
 # ALB listens on port 80.
 # Forwards traffic to the Target Group.
 # Target Group distributes traffic to all attached EC2 instances (on port 80).
