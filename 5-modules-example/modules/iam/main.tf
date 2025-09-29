@@ -47,6 +47,32 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = aws_iam_role.ec2_role.name
 }
 
+resource "aws_iam_role_policy" "snap" {
+  name = "${var.name}-ec2-policy"
+  role = aws_iam_role.ec2_role.id
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "EC2DescribeReadOnly",
+        "Effect": "Allow",
+        "Action": [
+          "ec2:DescribeSnapshots",
+          "ec2:DescribeSnapshotAttribute",
+          "ec2:DescribeVolumes",
+          "ec2:DescribeVolumeAttribute",
+          "ec2:DescribeTags",
+          "ec2:DescribeImages",
+          "ec2:DescribeInstances"
+        ],
+        "Resource": "*"
+      }
+    ]
+  })
+}
+
+
+
 # alternate approch
 # resource "aws_iam_role" "ec2_role" {
 #   name               = "${var.name}-ec2-role"
