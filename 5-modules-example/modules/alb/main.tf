@@ -54,7 +54,7 @@ resource "aws_lb_target_group" "tg" {
 resource "aws_lb_target_group_attachment" "tga" {
   count = try(length(var.target_instance_ids), 0)
   target_group_arn = aws_lb_target_group.tg.arn
-  target_id        = var.target_instance_ids[index]
+  target_id        = var.target_instance_ids[count.index]
   port             = 80
 }
 
