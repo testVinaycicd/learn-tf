@@ -52,9 +52,9 @@ resource "aws_lb_target_group" "tg" {
 
 # you mention what all instances needs to be in the target group
 resource "aws_lb_target_group_attachment" "tga" {
-  for_each = var.target_instance_ids
+  count = try(length(var.target_instance_ids), 0)
   target_group_arn = aws_lb_target_group.tg.arn
-  target_id        = each.value
+  target_id        = var.target_instance_ids[index]
   port             = 80
 }
 
