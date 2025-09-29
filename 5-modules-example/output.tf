@@ -1,5 +1,5 @@
 output "check-webserver" {
-  value = module.web-server-1.public_ip
+  value = module.web_server_1.public_ip
 }
 
 output "alb_dns" {
