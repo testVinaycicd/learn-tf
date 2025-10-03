@@ -9,6 +9,7 @@ data "aws_route53_zone" "primary" {
 ############################################
 # 2) ACM certificate for subdomain
 ############################################
+#  request a cert in ACM
 resource "aws_acm_certificate" "site" {
   domain_name       = "test-1-tera.mikeydevops1.online"
   validation_method = "DNS"
@@ -23,6 +24,9 @@ resource "aws_acm_certificate" "site" {
 }
 
 # DNS validation record in your hosted zone
+# proof of ownership
+# ensures certs are renewed automatically
+# creates cname
 resource "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.site.domain_validation_options :
@@ -40,6 +44,7 @@ resource "aws_route53_record" "cert_validation" {
   records = [each.value.record]
 }
 
+#  checks the proof of ownership that is created and terraform waits for acm validation
 resource "aws_acm_certificate_validation" "site" {
   certificate_arn         = aws_acm_certificate.site.arn
   validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
@@ -62,7 +67,7 @@ resource "aws_acm_certificate_validation" "site" {
 #     }
 #   }
 # }
-
+# attach validated cert to alb and now alb can serve https traffic with that cert
 resource "aws_lb_listener" "https" {
   load_balancer_arn = var.alb_arn
   port              = 443
@@ -79,6 +84,7 @@ resource "aws_lb_listener" "https" {
 ############################################
 # 4) Route 53 record for subdomain
 ############################################
+# with this we can automate alb to our own dns name
 resource "aws_route53_record" "subdomain" {
   zone_id = data.aws_route53_zone.primary.zone_id
   name    = "test-1-tera.mikeydevops1.online"
@@ -90,3 +96,12 @@ resource "aws_route53_record" "subdomain" {
     evaluate_target_health = true
   }
 }
+
+
+# when the traffic hits this domain
+# the traffic request acm to talk to my domain secretly so it shows the certificate
+# alc decrypt the traffic ( the termination point )
+# at this point alb has plain http traffic and it forwards it to ec2 instances over ports 80 inside my vpc
+
+# So the ALB is the TLS terminator.
+#T he EC2s don’t need to know anything about HTTPS — they just serve normal HTTP.
