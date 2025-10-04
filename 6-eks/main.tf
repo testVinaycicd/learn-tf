@@ -283,7 +283,7 @@ resource "aws_eks_node_group" "default" {
 
 ############################
 # Core addons (pinned)
-############################
+###########################S
 
 data "aws_eks_addon_version" "core" {
   for_each = toset(["vpc-cni","kube-proxy","coredns"])

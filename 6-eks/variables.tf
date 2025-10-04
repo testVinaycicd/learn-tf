@@ -38,7 +38,7 @@ variable "node_max_size"       {
   default = 6
 }
 
-# Admin access principal (IAM role/user ARN) to bootstrap cluster-admin
+# Admin access principal (IAM role/user ARN) to bootstrap cluster- admin
 variable "admin_principal_arn" { type = string }
 
 # Tags
