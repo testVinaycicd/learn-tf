@@ -223,6 +223,7 @@ resource "aws_eks_access_policy_association" "admin" {
   depends_on = [aws_eks_access_entry.admin]
 }
 
+
 ############################
 # Node group (managed)
 ############################
@@ -242,6 +243,12 @@ resource "aws_iam_role" "nodes" {
   assume_role_policy = data.aws_iam_policy_document.nodes_assume.json
   tags               = var.tags
 }
+
+resource "aws_iam_role_policy_attachment" "node_eks_worker" {
+  role       = aws_iam_role.nodes.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
 
 resource "aws_iam_role_policy_attachment" "nodes_minimal" {
   for_each = {
@@ -285,20 +292,20 @@ resource "aws_eks_node_group" "default" {
 # Core addons (pinned)
 ###########################S
 
-data "aws_eks_addon_version" "core" {
-  for_each = toset(["vpc-cni","kube-proxy","coredns"])
-  addon_name         = each.key
-  kubernetes_version = aws_eks_cluster.this.version
-  most_recent        = true
-}
-
-resource "aws_eks_addon" "core" {
-  for_each     = data.aws_eks_addon_version.core
-  cluster_name = aws_eks_cluster.this.name
-  addon_name   = each.key
-  addon_version = each.value.version
-  tags         = var.tags
-}
+# data "aws_eks_addon_version" "core" {
+#   for_each = toset(["vpc-cni","kube-proxy","coredns"])
+#   addon_name         = each.key
+#   kubernetes_version = aws_eks_cluster.this.version
+#   most_recent        = true
+# }
+#
+# resource "aws_eks_addon" "core" {
+#   for_each     = data.aws_eks_addon_version.core
+#   cluster_name = aws_eks_cluster.this.name
+#   addon_name   = each.key
+#   addon_version = each.value.version
+#   tags         = var.tags
+# }
 
 
 
