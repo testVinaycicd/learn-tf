@@ -12,13 +12,13 @@ variable "public_subnet_ids"   {
 # API endpoint exposure
 variable "endpoint_private_access" {
   type = bool
-  default = true
+  default = false
 }
 variable "endpoint_public_access"  {
   type = bool
-  default = false
+  default = true
 }
- # variable "endpoint_public_cidrs"   { type = list(string)  } # tighten if you enable public
+ variable "endpoint_public_cidrs"   { type = list(string)  } # tighten if you enable public
 
 # Node group
 variable "node_instance_types" {

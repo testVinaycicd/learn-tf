@@ -153,7 +153,7 @@ resource "aws_eks_cluster" "this" {
     subnet_ids = var.private_subnet_ids
     endpoint_private_access = var.endpoint_private_access # (whether the API server endpoint is accessible inside the VPC)
     endpoint_public_access = var.endpoint_public_access
-    # public_access_cidrs = var.endpoint_public_cidrs  # office ip or trusted ip (restrict which IP ranges can hit the public API endpoint.)
+     public_access_cidrs = var.endpoint_public_cidrs  # office ip or trusted ip (restrict which IP ranges can hit the public API endpoint.)
   }
 
   # IP address family for Kubernetes pod and service networking.
@@ -248,25 +248,37 @@ resource "aws_iam_role_policy_attachment" "node_eks_worker" {
   role       = aws_iam_role.nodes.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
-resource "aws_iam_role_policy_attachment" "node-AmazonEKS_CNI_Policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.nodes.name
-}
+# resource "aws_iam_role_policy_attachment" "node-AmazonEKS_CNI_Policy" {
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+#   role       = aws_iam_role.nodes.name
+# }
 
-resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOnly" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.nodes.name
-}
+# resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOnly" {
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+#   role       = aws_iam_role.nodes.name
+# }
 
 resource "aws_iam_role_policy_attachment" "nodes_minimal" {
   for_each = {
     AmazonEKSWorkerNodeMinimalPolicy   = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodeMinimalPolicy"
     AmazonEC2ContainerRegistryPullOnly = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+    AmazonEKS_CNI_Policy = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+    AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   }
   role       = aws_iam_role.nodes.name
   policy_arn = each.value
 }
 
+resource "aws_launch_template" "eks_nodes" {
+  name_prefix               = "${var.cluster_name}-ng-"
+  update_default_version    = true
+
+  # attach the SG you created for nodes
+  vpc_security_group_ids    = [aws_security_group.nodes.id]
+
+  # let EKS manage AMI & bootstrap — do NOT set image_id or user_data here
+  # instance profile comes from the node group role, not here
+}
 
 resource "aws_eks_node_group" "default" {
   cluster_name  = aws_eks_cluster.this.name
@@ -280,8 +292,12 @@ resource "aws_eks_node_group" "default" {
     min_size     = var.node_min_size
   }
 
-  ami_type  = "AL2_x86_64"
-  capacity_type = "SPOT"
+  # ami_type  = "AL2_x86_64"
+  # capacity_type = "SPOT"
+  launch_template {
+    id      = aws_launch_template.eks_nodes.id
+    version = "$Latest"
+  }
 
   update_config {
     max_unavailable = 1
