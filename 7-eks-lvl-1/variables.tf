@@ -18,7 +18,7 @@ variable "kubernetes_version" {
 variable "subnet_ids" {
   type = list(string)
   description = "Public subnet IDs (with IGW route)"
-  default = ["subnet-00f4732eaf5fb541d"]
+  default = ["subnet-00f4732eaf5fb541d","subnet-098bdea733d118826"]
 }
 # Lock the public endpoint to your current public IP if you can.
 # For quick tests you can use 0.0.0.0/0, but it's not recommended.
