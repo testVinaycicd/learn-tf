@@ -22,7 +22,10 @@ provider "aws" {
 data "aws_iam_policy_document" "eks_assume" {
   statement {
     actions = ["sts:AssumeRole"]
-    principals { type = "Service", identifiers = ["eks.amazonaws.com"] }
+    principals {
+      type = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
   }
 }
 
@@ -62,7 +65,10 @@ resource "aws_eks_cluster" "this" {
 data "aws_iam_policy_document" "nodes_assume" {
   statement {
     actions = ["sts:AssumeRole"]
-    principals { type = "Service", identifiers = ["ec2.amazonaws.com"] }
+    principals {
+      type = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
   }
 }
 
