@@ -58,8 +58,8 @@ resource "aws_eks_cluster" "this" {
   vpc_config {
     subnet_ids               = var.private_subnet_ids
     endpoint_private_access  = true
-    endpoint_public_access   = false
-    # remove public_access_cidrs when public access is false
+    endpoint_public_access   = true
+    public_access_cidrs      = ["13.221.128.232/32"]  # run: curl -s http://checkip.amazonaws.com
   }
 
 
@@ -179,5 +179,17 @@ resource "aws_security_group_rule" "nodes_to_api" {
   source_security_group_id = aws_security_group.nodes.id
 }
 
+variable "bastion_sg_id" {
+  type        = string
+  description = "Security group ID of the bastion/ops host that runs kubectl"
+}
 
-
+resource "aws_security_group_rule" "bastion_to_api" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+  source_security_group_id = var.bastion_sg_id
+  description              = "Bastion to EKS API server"
+}
