@@ -4,6 +4,10 @@ variable "region" {
   description = "AWS region"
 }
 
+variable "vpc_id" {
+  default = "vpc-0a05ed25fa5ee7713"
+}
+
 variable "cluster_name" {
   type        = string
   default     = "mikey-eks"
