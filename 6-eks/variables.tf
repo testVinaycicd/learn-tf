@@ -18,7 +18,7 @@ variable "endpoint_public_access"  {
   type = bool
   default = false
 }
-variable "endpoint_public_cidrs"   { type = list(string)  } # tighten if you enable public
+ # variable "endpoint_public_cidrs"   { type = list(string)  } # tighten if you enable public
 
 # Node group
 variable "node_instance_types" {

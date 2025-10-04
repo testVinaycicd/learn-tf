@@ -8,3 +8,4 @@ admin_principal_arn = "arn:aws:account::886436958775:account"
 # For temporary public API access (not recommended long-term):
 endpoint_private_access = true
 endpoint_public_access  = false
+# endpoint_public_cidrs = ["10.0.0.0/24","10.0.1.0/24"]
