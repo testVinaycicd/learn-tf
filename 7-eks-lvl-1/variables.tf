@@ -35,3 +35,9 @@ variable "node_instance_type" {
   type        = string
   default     = "t3.medium"
 }
+
+variable "private_subnet_ids" {
+  type        = list(string)
+  description = "Private subnet IDs in at least two AZs (with NAT route)"
+  default = ["subnet-0a7de61b17306b32f","subnet-059376aad9737ac30"]
+}
