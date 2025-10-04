@@ -57,9 +57,7 @@ resource "aws_eks_cluster" "this" {
   ###################
   vpc_config {
     subnet_ids               = var.private_subnet_ids
-    endpoint_private_access = false
-    endpoint_public_access  = true
-    public_access_cidrs     = ["13.221.128.232/32"]  # your EC2's public IP
+
   }
 
 
@@ -179,3 +177,24 @@ resource "aws_security_group_rule" "nodes_to_api" {
   source_security_group_id = aws_security_group.nodes.id
 }
 
+
+#########################################
+resource "aws_eks_access_entry" "main" {
+  for_each          = var.access
+  cluster_name      = aws_eks_cluster.this.name
+  principal_arn     = each.value["role"]
+  kubernetes_groups = each.value["kubernetes_groups"]
+  type              = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "main" {
+  for_each      = var.access
+  cluster_name  = aws_eks_cluster.this.name
+  policy_arn    = each.value["policy_arn"]
+  principal_arn = each.value["role"]
+
+  access_scope {
+    type       = each.value["access_scope_type"]
+    namespaces = each.value["access_scope_namespaces"]
+  }
+}

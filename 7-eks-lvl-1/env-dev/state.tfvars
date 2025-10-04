@@ -9,3 +9,21 @@
 # endpoint_private_access = true
 # endpoint_public_access  = false
 #  endpoint_public_cidrs = ["10.0.0.0/24","10.0.1.0/24"]
+
+
+    access = {
+      workstation = {
+        role                    = "arn:aws:iam::633788536644:role/workstation-role"
+        kubernetes_groups       = ["system:masters"]
+        policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+        access_scope_type       = "cluster"
+        access_scope_namespaces = []
+      }
+      github_runner = {
+        role                    = "arn:aws:iam::886436958775:role/github-runner-role"
+        kubernetes_groups       = ["system:masters"]
+        policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+        access_scope_type       = "cluster"
+        access_scope_namespaces = []
+      }
+    }
