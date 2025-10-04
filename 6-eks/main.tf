@@ -230,7 +230,10 @@ resource "aws_eks_access_policy_association" "admin" {
 data "aws_iam_policy_document" "nodes_assume" {
   statement {
     actions = ["sts:AssumeRole"]
-    principals { type = "Service", identifiers = ["ec2.amazonaws.com"] }
+    principals {
+      type = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
   }
 }
 
