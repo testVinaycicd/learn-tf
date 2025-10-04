@@ -57,9 +57,9 @@ resource "aws_eks_cluster" "this" {
   ###################
   vpc_config {
     subnet_ids               = var.private_subnet_ids
-    endpoint_private_access  = true
-    endpoint_public_access   = true
-    public_access_cidrs      = ["13.221.128.232/32"]  # run: curl -s http://checkip.amazonaws.com
+    endpoint_private_access = false
+    endpoint_public_access  = true
+    public_access_cidrs     = ["13.221.128.232/32"]  # your EC2's public IP
   }
 
 
