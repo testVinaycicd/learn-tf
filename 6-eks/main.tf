@@ -295,6 +295,28 @@ resource "aws_eks_node_group" "default" {
 
 }
 
+# Control plane -> nodes (kubelet)
+resource "aws_security_group_rule" "cluster_to_nodes_kubelet" {
+  type                     = "ingress"
+  from_port                = 10250
+  to_port                  = 10250
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.nodes.id
+  source_security_group_id = aws_security_group.cluster.id
+  description              = "EKS control plane to nodes (kubelet)"
+}
+
+# Node-to-node (pods, overlay, healthchecks)
+resource "aws_security_group_rule" "nodes_within_group_all" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nodes.id
+  source_security_group_id = aws_security_group.nodes.id
+  description              = "Node-to-node traffic"
+}
+
 
 ############################
 # Core addons (pinned)
