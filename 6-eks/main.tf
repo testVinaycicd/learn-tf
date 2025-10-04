@@ -292,7 +292,7 @@ resource "aws_eks_node_group" "default" {
     min_size     = var.node_min_size
   }
 
-  # ami_type  = "AL2_x86_64"
+  # ami_type  = "AL2_x86_64  "
   # capacity_type = "SPOT"
   launch_template {
     id      = aws_launch_template.eks_nodes.id
