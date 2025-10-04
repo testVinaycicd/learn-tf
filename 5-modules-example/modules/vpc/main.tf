@@ -93,7 +93,7 @@ resource "aws_subnet" "private" {
   cidr_block = cidrsubnet(var.cidr,8 ,each.value + 100 ) # separate /24 range, e.g., 10.0.100.0/24, 10.0.101.0/24
   availability_zone = each.key
   map_public_ip_on_launch = false
-  tags = { Name = "${var.name}-public-${each.key}" }
+  tags = { Name = "${var.name}-private-${each.key}" }
 }
 
 resource "aws_eip" "nat" {
