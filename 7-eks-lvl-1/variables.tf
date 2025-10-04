@@ -15,10 +15,10 @@ variable "kubernetes_version" {
 }
 
 # IMPORTANT: pass **PUBLIC** subnet IDs here for Level-1
-variable "subnet_ids" {
-  type        = list(string)
-  description = "Public subnet IDs (with IGW route)"
-}
+# variable "subnet_ids" {
+#   type        = list(string)
+#   description = "Public subnet IDs (with IGW route)"
+# }
 
 # Lock the public endpoint to your current public IP if you can.
 # For quick tests you can use 0.0.0.0/0, but it's not recommended.
