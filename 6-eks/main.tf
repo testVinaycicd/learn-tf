@@ -151,9 +151,9 @@ resource "aws_eks_cluster" "this" {
   vpc_config {
     security_group_ids = [aws_security_group.cluster.id]
     subnet_ids = var.private_subnet_ids
-    endpoint_private_access = var.endpoint_private_access # (whether the API server endpoint is accessible inside the VPC)
-    endpoint_public_access = var.endpoint_public_access
-     public_access_cidrs = var.endpoint_public_cidrs  # office ip or trusted ip (restrict which IP ranges can hit the public API endpoint.)
+    endpoint_private_access = true # (whether the API server endpoint is accessible inside the VPC)
+    endpoint_public_access = false
+     # public_access_cidrs = var.endpoint_public_cidrs  # office ip or trusted ip (restrict which IP ranges can hit the public API endpoint.)
   }
 
   # IP address family for Kubernetes pod and service networking.
