@@ -45,13 +45,23 @@ resource "aws_eks_cluster" "this" {
   role_arn = aws_iam_role.eks.arn
   version  = var.kubernetes_version
 
+  # vpc_config {
+  #   # Use **public subnets** for level-1 to avoid NAT complexity
+  #   subnet_ids              = var.subnet_ids
+  #   endpoint_private_access = true
+  #   endpoint_public_access  = true
+  #   public_access_cidrs     = var.public_access_cidrs
+  # }
+  ###################
+  # level 4
+  ###################
   vpc_config {
-    # Use **public subnets** for level-1 to avoid NAT complexity
-    subnet_ids              = var.subnet_ids
-    endpoint_private_access = true
-    endpoint_public_access  = true
-    public_access_cidrs     = var.public_access_cidrs
+    subnet_ids               = var.private_subnet_ids
+    endpoint_private_access  = true
+    endpoint_public_access   = false
+    # remove public_access_cidrs when public access is false
   }
+
 
   access_config {
     authentication_mode                           = "API"
