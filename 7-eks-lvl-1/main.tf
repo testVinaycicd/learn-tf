@@ -289,7 +289,10 @@ resource "aws_route" "eks_to_default" {
 
 # All subnets in default VPC
 data "aws_subnets" "default_all" {
-  filter { name = "vpc-id" values = [data.aws_vpc.default.id] }
+  filter {
+    name = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
 # For each subnet, fetch the route table actually associated
@@ -329,9 +332,24 @@ resource "aws_security_group" "dns_inbound" {
   description = "Allow DNS from default VPC to inbound resolver in EKS VPC"
   vpc_id      = var.vpc_id
 
-  ingress { from_port=53 to_port=53 protocol="tcp" cidr_blocks=[data.aws_vpc.def.cidr_block] }
-  ingress { from_port=53 to_port=53 protocol="udp" cidr_blocks=[data.aws_vpc.def.cidr_block] }
-  egress  { from_port=0  to_port=0  protocol="-1"  cidr_blocks=["0.0.0.0/0"] }
+  ingress {
+    from_port=53
+    to_port=53
+    protocol="tcp"
+    cidr_blocks=[data.aws_vpc.def.cidr_block]
+  }
+  ingress {
+    from_port=53
+    to_port=53
+    protocol="udp"
+    cidr_blocks=[data.aws_vpc.def.cidr_block]
+  }
+  egress  {
+    from_port=0
+    to_port=0
+    protocol="-1"
+    cidr_blocks=["0.0.0.0/0"]
+  }
 }
 
 resource "aws_security_group" "dns_outbound" {
@@ -339,9 +357,24 @@ resource "aws_security_group" "dns_outbound" {
   description = "Allow default VPC subnets to reach outbound resolver"
   vpc_id      = data.aws_vpc.default.id
 
-  ingress { from_port=53 to_port=53 protocol="tcp" cidr_blocks=[data.aws_vpc.default.cidr_block] }
-  ingress { from_port=53 to_port=53 protocol="udp" cidr_blocks=[data.aws_vpc.default.cidr_block] }
-  egress  { from_port=0  to_port=0  protocol="-1"  cidr_blocks=["0.0.0.0/0"] }
+  ingress {
+    from_port=53
+    to_port=53
+    protocol="tcp"
+    cidr_blocks=[data.aws_vpc.default.cidr_block]
+  }
+  ingress {
+    from_port=53
+    to_port=53
+    protocol="udp"
+    cidr_blocks=[data.aws_vpc.default.cidr_block]
+  }
+  egress  {
+    from_port=0
+    to_port=0
+    protocol="-1"
+    cidr_blocks=["0.0.0.0/0"]
+  }
 }
 
 # -------- INBOUND resolver endpoint in the EKS VPC --------
