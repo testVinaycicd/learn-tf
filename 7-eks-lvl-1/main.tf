@@ -405,7 +405,7 @@ resource "aws_route53_resolver_endpoint" "outbound_default" {
 # Helper locals to capture the private IPs of the inbound endpoint
 locals {
   inbound_ips = [
-    for ip in aws_route53_resolver_endpoint.inbound_eks.ip_addresses : ip.ip
+    for ip in aws_route53_resolver_endpoint.inbound_eks.ip_address : ip.ip
   ]
 }
 
