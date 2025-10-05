@@ -56,9 +56,9 @@ resource "aws_eks_cluster" "this" {
   # level 4
   ###################
   vpc_config {
-    subnet_ids               = var.subnet_ids
-
-
+    subnet_ids               = var.private_subnet_ids
+    endpoint_private_access  = true
+    endpoint_public_access   = false
   }
 
 
@@ -100,6 +100,12 @@ resource "aws_iam_role_policy_attachment" "node_cni" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
+resource "aws_launch_template" "ng" {
+  name_prefix = "${var.cluster_name}-ng-"
+  vpc_security_group_ids = [aws_security_group.nodes.id]
+}
+
+
 # --- Managed Node Group (EKS chooses AL2023 by default) ---
 resource "aws_eks_node_group" "default" {
   cluster_name   = aws_eks_cluster.this.name
@@ -112,6 +118,8 @@ resource "aws_eks_node_group" "default" {
     min_size     = 1
     max_size     = 2
   }
+
+  launch_template { id = aws_launch_template.ng.id, version = "$Latest" }
 
   capacity_type = "ON_DEMAND" # keep simple/reliable for first bring-up
 
@@ -198,3 +206,5 @@ resource "aws_eks_access_policy_association" "main" {
     namespaces = each.value["access_scope_namespaces"]
   }
 }
+
+
