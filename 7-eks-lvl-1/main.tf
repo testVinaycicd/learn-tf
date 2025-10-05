@@ -119,7 +119,10 @@ resource "aws_eks_node_group" "default" {
     max_size     = 2
   }
 
-  launch_template { id = aws_launch_template.ng.id, version = "$Latest" }
+  launch_template {
+    id = aws_launch_template.ng.id
+    version = "$Latest"
+  }
 
   capacity_type = "ON_DEMAND" # keep simple/reliable for first bring-up
 
