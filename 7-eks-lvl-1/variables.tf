@@ -39,7 +39,7 @@ variable "node_instance_type" {
 variable "private_subnet_ids" {
   type        = list(string)
   description = "Private subnet IDs in at least two AZs (with NAT route)"
-  default = ["subnet-0a7de61b17306b32f","subnet-059376aad9737ac30"]
+  default = ["subnet-0d3eaa9f19a424848","subnet-0eb1866dc38bb339f"]
 }
 
 variable "access" {}
