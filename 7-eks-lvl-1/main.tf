@@ -287,27 +287,47 @@ resource "aws_route" "eks_to_default" {
   transit_gateway_id     = aws_ec2_transit_gateway.main.id
 }
 
-# All subnets in default VPC
-data "aws_subnets" "default_all" {
+# # All subnets in default VPC
+# data "aws_subnets" "default_all" {
+#   filter {
+#     name = "vpc-id"
+#     values = [data.aws_vpc.default.id]
+#   }
+# }
+
+# For each subnet, fetch the route table actually associated
+data "aws_route_tables" "default_non_main" {
   filter {
-    name = "vpc-id"
+    name   = "vpc-id"
     values = [data.aws_vpc.default.id]
+  }
+  # exclude the main table
+  filter {
+    name   = "association.main"
+    values = ["false"]
   }
 }
 
-# For each subnet, fetch the route table actually associated
-data "aws_route_table" "default_by_subnet" {
-  for_each  = toset(data.aws_subnets.default_all.ids)
-  subnet_id = each.key
+# Build the complete set: main RT + all non-main RTs
+locals {
+  default_vpc_route_table_ids = toset(
+    concat(
+      [data.aws_vpc.default.main_route_table_id],
+      data.aws_route_tables.default_non_main.ids
+    )
+  )
+}
+
+# Ensure EVERY default-VPC route table can reach the EKS CIDR via TGW
+resource "aws_route" "default_to_eks_all" {
+  for_each               = local.default_vpc_route_table_ids
+  route_table_id         = each.value
+  destination_cidr_block = "10.0.0.0/16"                  # EKS VPC CIDR
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
 }
 
 # Ensure every associated RT can reach 10.0.0.0/16 via TGW
-resource "aws_route" "default_to_eks_all" {
-  for_each               = data.aws_route_table.default_by_subnet
-  route_table_id         = each.value.id
-  destination_cidr_block = "10.0.0.0/16"
-  transit_gateway_id     = aws_ec2_transit_gateway.main.id
-}
+
 
 
 resource "aws_security_group_rule" "kubectl_to_eks_api" {
@@ -383,23 +403,17 @@ resource "aws_route53_resolver_endpoint" "inbound_eks" {
   direction          = "INBOUND"
   security_group_ids = [aws_security_group.dns_inbound.id]
 
-  ip_address  { subnet_id = var.private_subnet_ids[0] }
-  ip_address  { subnet_id = var.private_subnet_ids[1] }
-
-  tags = { Name = "${var.cluster_name}-inbound" }
+  ip_address { subnet_id = var.private_subnet_ids[0] }
+  ip_address { subnet_id = var.private_subnet_ids[1] }
 }
 
-# -------- OUTBOUND resolver endpoint in the default VPC --------
-# Use two subnets from the default VPC
 resource "aws_route53_resolver_endpoint" "outbound_default" {
   name               = "default-outbound"
   direction          = "OUTBOUND"
   security_group_ids = [aws_security_group.dns_outbound.id]
 
-  ip_address  { subnet_id = data.aws_subnets.default.ids[0] }
-  ip_address  { subnet_id = data.aws_subnets.default.ids[1] }
-
-  tags = { Name = "default-outbound" }
+  ip_address { subnet_id = data.aws_subnets.default.ids[0] }
+  ip_address { subnet_id = data.aws_subnets.default.ids[1] }
 }
 
 # Helper locals to capture the private IPs of the inbound endpoint
