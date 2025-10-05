@@ -316,8 +316,8 @@ resource "aws_security_group_rule" "kubectl_to_eks_api" {
   to_port                  = 443
   protocol                 = "tcp"
   security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
-  source_security_group_id = "sg-0dcda09f65953b6b7" #
-  description              = "Default VPC EC2 -> EKS API over TGW"
+  source_security_group_id = "sg-0787b3f69c66ddcff" #
+  description              = "Default VPC EC2 EKS API over TGW"
   depends_on               = [aws_eks_cluster.this]
 }
 
@@ -383,8 +383,8 @@ resource "aws_route53_resolver_endpoint" "inbound_eks" {
   direction          = "INBOUND"
   security_group_ids = [aws_security_group.dns_inbound.id]
 
-  ip_addresses { subnet_id = var.private_subnet_ids[0] }
-  ip_addresses { subnet_id = var.private_subnet_ids[1] }
+  ip_address  { subnet_id = var.private_subnet_ids[0] }
+  ip_address  { subnet_id = var.private_subnet_ids[1] }
 
   tags = { Name = "${var.cluster_name}-inbound" }
 }
@@ -396,8 +396,8 @@ resource "aws_route53_resolver_endpoint" "outbound_default" {
   direction          = "OUTBOUND"
   security_group_ids = [aws_security_group.dns_outbound.id]
 
-  ip_addresses { subnet_id = data.aws_subnets.default.ids[0] }
-  ip_addresses { subnet_id = data.aws_subnets.default.ids[1] }
+  ip_address  { subnet_id = data.aws_subnets.default.ids[0] }
+  ip_address  { subnet_id = data.aws_subnets.default.ids[1] }
 
   tags = { Name = "default-outbound" }
 }
