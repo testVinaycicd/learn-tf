@@ -316,7 +316,7 @@ resource "aws_security_group_rule" "kubectl_to_eks_api" {
   to_port                  = 443
   protocol                 = "tcp"
   security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
-  source_security_group_id = "sg-0dcda09f65953b6b7"
+  source_security_group_id = "sg-0dcda09f65953b6b7" #
   description              = "Default VPC EC2 -> EKS API over TGW"
   depends_on               = [aws_eks_cluster.this]
 }
