@@ -331,7 +331,7 @@ resource "aws_route" "default_to_eks_all" {
 
 
 resource "aws_security_group_rule" "kubectl_to_eks_api" {
-  type              = "inbound" # or "ingress" depending on your TF version
+  type              = "ingress" # or "ingress" depending on your TF version
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
