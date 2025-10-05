@@ -56,7 +56,7 @@ resource "aws_eks_cluster" "this" {
   # level 4
   ###################
   vpc_config {
-    subnet_ids               = var.private_subnet_ids
+    subnet_ids               = var.subnet_ids
 
 
   }
