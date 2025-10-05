@@ -309,7 +309,11 @@ resource "aws_route" "default_to_eks_all" {
   transit_gateway_id     = aws_ec2_transit_gateway.main.id
 }
 
-variable "kubectl_ec2_sg_id" { type = string }
+variable "kubectl_ec2_sg_id"
+{
+  type = string
+  default = "sg-0dcda09f65953b6b7"
+}
 
 resource "aws_security_group_rule" "kubectl_to_eks_api" {
   type                     = "ingress"
