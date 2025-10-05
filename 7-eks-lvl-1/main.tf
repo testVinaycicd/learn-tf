@@ -328,9 +328,7 @@ resource "aws_route" "default_to_eks_all" {
 
 # Ensure every associated RT can reach 10.0.0.0/16 via TGW
 
-data "aws_vpc" "default" {
-  default = true
-}
+
 
 resource "aws_security_group_rule" "kubectl_to_eks_api" {
   type              = "inbound" # or "ingress" depending on your TF version
