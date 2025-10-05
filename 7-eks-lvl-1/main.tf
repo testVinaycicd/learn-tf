@@ -58,6 +58,7 @@ resource "aws_eks_cluster" "this" {
   vpc_config {
     subnet_ids               = var.private_subnet_ids
 
+
   }
 
 
@@ -183,7 +184,6 @@ resource "aws_eks_access_entry" "main" {
   for_each          = var.access
   cluster_name      = aws_eks_cluster.this.name
   principal_arn     = each.value["role"]
-  kubernetes_groups = each.value["kubernetes_groups"]
   type              = "STANDARD"
 }
 
