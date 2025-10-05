@@ -328,7 +328,11 @@ resource "aws_route" "default_to_eks_all" {
 
 # Ensure every associated RT can reach 10.0.0.0/16 via TGW
 
+variable "kubectl_instance_id" { type = string }
 
+data "aws_instance" "kubectl_host" {
+  instance_id = var.kubectl_instance_id
+}
 
 resource "aws_security_group_rule" "kubectl_to_eks_api" {
   type                     = "ingress"
@@ -336,7 +340,7 @@ resource "aws_security_group_rule" "kubectl_to_eks_api" {
   to_port                  = 443
   protocol                 = "tcp"
   security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
-  source_security_group_id = "sg-0787b3f69c66ddcff" #
+  cidr_blocks       = ["${data.aws_instance.kubectl_host.private_ip}/32"]
   description              = "Default VPC EC2 EKS API over TGW"
   depends_on               = [aws_eks_cluster.this]
 }
