@@ -58,7 +58,7 @@ resource "aws_eks_cluster" "this" {
   vpc_config {
     subnet_ids               = var.private_subnet_ids
     endpoint_private_access  = true
-    endpoint_public_access   = false
+    endpoint_public_access   = true
     public_access_cidrs      = ["3.85.169.228/32"]
   }
 
@@ -212,3 +212,191 @@ resource "aws_eks_access_policy_association" "main" {
 }
 
 
+###############################################
+# Transit Gateway
+###############################################
+resource "aws_ec2_transit_gateway" "main" {
+  description = "Main TGW to connect default and EKS VPCs"
+  amazon_side_asn = 64512
+  auto_accept_shared_attachments = "enable"
+  default_route_table_association = "enable"
+  default_route_table_propagation = "enable"
+  tags = { Name = "mikey-tgw" }
+}
+
+###############################################
+# Attach Default VPC (172.31/16)
+###############################################
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
+resource "aws_ec2_transit_gateway_vpc_attachment" "default_vpc" {
+  subnet_ids         = slice(data.aws_subnets.default.ids, 0, 2)
+  transit_gateway_id = aws_ec2_transit_gateway.main.id
+  vpc_id             = data.aws_vpc.default.id
+  tags = { Name = "default-vpc-attachment" }
+}
+
+###############################################
+# Attach EKS VPC (10.0/16)
+###############################################
+resource "aws_ec2_transit_gateway_vpc_attachment" "eks_vpc" {
+  subnet_ids         = slice(var.private_subnet_ids, 0, 2)
+  transit_gateway_id = aws_ec2_transit_gateway.main.id
+  vpc_id             = var.vpc_id
+  tags = { Name = "eks-vpc-attachment" }
+}
+
+###############################################
+# Add TGW routes to both sides
+###############################################
+
+# Default VPC route table: route to 10.0.0.0/16 via TGW
+resource "aws_route" "default_to_eks" {
+  route_table_id         = data.aws_vpc.default.main_route_table_id
+  destination_cidr_block = "10.0.0.0/16"
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
+}
+
+data "aws_route_tables" "private" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+
+  filter {
+    name   = "tag:Name"
+    values = ["*private*"] # matches anything with 'private' in the Name tag
+  }
+}
+
+# EKS VPC private route table: route to 172.31.0.0/16 via TGW
+# Adjust if you have multiple private route tables
+resource "aws_route" "eks_to_default" {
+  for_each = toset(data.aws_route_tables.private.ids)
+  route_table_id         = each.value
+  destination_cidr_block = "172.31.0.0/16"
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
+}
+
+# All subnets in default VPC
+data "aws_subnets" "default_all" {
+  filter { name = "vpc-id" values = [data.aws_vpc.default.id] }
+}
+
+# For each subnet, fetch the route table actually associated
+data "aws_route_table" "default_by_subnet" {
+  for_each  = toset(data.aws_subnets.default_all.ids)
+  subnet_id = each.key
+}
+
+# Ensure every associated RT can reach 10.0.0.0/16 via TGW
+resource "aws_route" "default_to_eks_all" {
+  for_each               = data.aws_route_table.default_by_subnet
+  route_table_id         = each.value.id
+  destination_cidr_block = "10.0.0.0/16"
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
+}
+
+variable "kubectl_ec2_sg_id" { type = string }
+
+resource "aws_security_group_rule" "kubectl_to_eks_api" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+  source_security_group_id = var.kubectl_ec2_sg_id
+  description              = "Default VPC EC2 -> EKS API over TGW"
+  depends_on               = [aws_eks_cluster.this]
+}
+
+# -------- Shared: dynamic VPC CIDRs --------
+data "aws_vpc" "eks"     { id = var.vpc_id }
+data "aws_vpc" "def"     { id = data.aws_vpc.default.id }
+
+# -------- Security groups for DNS (TCP/UDP 53) --------
+resource "aws_security_group" "dns_inbound" {
+  name        = "${var.cluster_name}-dns-inbound-sg"
+  description = "Allow DNS from default VPC to inbound resolver in EKS VPC"
+  vpc_id      = var.vpc_id
+
+  ingress { from_port=53 to_port=53 protocol="tcp" cidr_blocks=[data.aws_vpc.def.cidr_block] }
+  ingress { from_port=53 to_port=53 protocol="udp" cidr_blocks=[data.aws_vpc.def.cidr_block] }
+  egress  { from_port=0  to_port=0  protocol="-1"  cidr_blocks=["0.0.0.0/0"] }
+}
+
+resource "aws_security_group" "dns_outbound" {
+  name        = "default-dns-outbound-sg"
+  description = "Allow default VPC subnets to reach outbound resolver"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress { from_port=53 to_port=53 protocol="tcp" cidr_blocks=[data.aws_vpc.default.cidr_block] }
+  ingress { from_port=53 to_port=53 protocol="udp" cidr_blocks=[data.aws_vpc.default.cidr_block] }
+  egress  { from_port=0  to_port=0  protocol="-1"  cidr_blocks=["0.0.0.0/0"] }
+}
+
+# -------- INBOUND resolver endpoint in the EKS VPC --------
+# Use two private subnets from your EKS VPC
+resource "aws_route53_resolver_endpoint" "inbound_eks" {
+  name               = "${var.cluster_name}-inbound"
+  direction          = "INBOUND"
+  security_group_ids = [aws_security_group.dns_inbound.id]
+
+  ip_addresses { subnet_id = var.private_subnet_ids[0] }
+  ip_addresses { subnet_id = var.private_subnet_ids[1] }
+
+  tags = { Name = "${var.cluster_name}-inbound" }
+}
+
+# -------- OUTBOUND resolver endpoint in the default VPC --------
+# Use two subnets from the default VPC
+resource "aws_route53_resolver_endpoint" "outbound_default" {
+  name               = "default-outbound"
+  direction          = "OUTBOUND"
+  security_group_ids = [aws_security_group.dns_outbound.id]
+
+  ip_addresses { subnet_id = data.aws_subnets.default.ids[0] }
+  ip_addresses { subnet_id = data.aws_subnets.default.ids[1] }
+
+  tags = { Name = "default-outbound" }
+}
+
+# Helper locals to capture the private IPs of the inbound endpoint
+locals {
+  inbound_ips = [
+    for ip in aws_route53_resolver_endpoint.inbound_eks.ip_addresses : ip.ip
+  ]
+}
+
+# -------- Forward rule in default VPC to EKS inbound endpoint --------
+# Forward the EKS private endpoint zone to the EKS VPC.
+# Using the regional zone covers EKS endpoints: <hash>.<suffix>.us-east-2.eks.amazonaws.com
+resource "aws_route53_resolver_rule" "forward_eks" {
+  domain_name          = "us-east-2.eks.amazonaws.com"
+  rule_type            = "FORWARD"
+  resolver_endpoint_id = aws_route53_resolver_endpoint.outbound_default.id
+
+  dynamic "target_ip" {
+    for_each = local.inbound_ips
+    content {
+      ip = target_ip.value
+    }
+  }
+
+  name = "forward-eks-us-east-2"
+}
+
+# Associate the rule with the default VPC so instances there use it
+resource "aws_route53_resolver_rule_association" "default_assoc" {
+  resolver_rule_id = aws_route53_resolver_rule.forward_eks.id
+  vpc_id           = data.aws_vpc.default.id
+}
