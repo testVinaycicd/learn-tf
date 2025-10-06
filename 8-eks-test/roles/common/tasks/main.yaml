@@ -1,0 +1,8 @@
+- name: Disable password auth
+  ansible.builtin.shell: sudo sed -i -E 's/^#?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
+
+- name: Disable root login
+  ansible.builtin.shell: sudo sed -i -E 's/^#?PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config
+
+- name: restart sshd
+  ansible.builtin.shell: sudo systemctl restart sshd

@@ -53,37 +53,51 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
+locals {
+  instances = {
+    front = { name = "front" }
+    cat   = { name = "cat" }
+  }
+}
+
 # --- Create 2 EC2 instances ---
 resource "aws_instance" "servers" {
-  count                  = 2
+  for_each               = local.instances
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t3.micro"
   key_name               = aws_key_pair.mikey_key.key_name
   vpc_security_group_ids = ["sg-075a6c6cca025aa34"]
 
   tags = {
-    Name        = "mikey-server-${count.index + 1}"
+    Name        = each.value.name
     Environment = "dev"
+    Prompt      = each.value.name
   }
 }
 
 resource "null_resource" "server_setup" {
+  for_each   = aws_instance.servers
   depends_on = [aws_instance.servers]
 
   triggers = {
     instance_id_change = aws_instance.servers.id
   }
+  connection {
+    type        = "ssh"
+    host        = each.value.public_ip
+    user        = "ec2-user"
+    private_key = tls_private_key.generated.private_key_pem
+    timeout     = "5m"
+  }
+
 
   provisioner "remote-exec" {
 
     inline = [
-      "aws s3 cp s3://learning-bucket-307/keys/mikey-auto-key.pem .",
-      "chmod 600 mikey-auto-key.pem",
-      "PUBLIC_IP=$(curl -s http://checkip.amazonaws.com)",
-      "ssh -i mikey-auto-key.pem ec2-user@PUBLIC_IP",
+
       "sudo pip3.11 install ansible hvac",
       " do echo 'Waiting for DNS...'; sleep 5; done",
-      "ansible-playbook -i localhost, setup-tool.yml  -e tool_name=instance "
+      "ansible-playbook -i localhost, setup-tool.yml  -e tool_name=${each.value.tags.Name} "
     ]
 
 
