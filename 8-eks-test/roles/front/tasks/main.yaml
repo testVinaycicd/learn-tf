@@ -1,2 +1,4 @@
-- name: Setup prompt
-  ansible.builtin.shell: set-prompt {{ tool_name }}
+- name: Set hostname to tool_name
+  become: true
+  ansible.builtin.hostname:
+    name: "{{ tool_name }}"
