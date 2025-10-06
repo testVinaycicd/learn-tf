@@ -1,0 +1,5 @@
+region      = "us-east-2"
+environment = "dev"
+# vpc_id      = "vpc-xxxxxxxx"
+# subnet_id   = "subnet-xxxxxxxx"
+# my_ip_cidr  = "YOUR.PUBLIC.IP.ADDR/32"
