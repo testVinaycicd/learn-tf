@@ -103,7 +103,7 @@ resource "null_resource" "server_setup" {
       # run your playbook locally via ansible-pull
       "ansible --version || true",
       " sleep 5",
-      "ansible-pull  -U https://github.com/testVinaycicd/learn-tf.git -C main  -i localhost, 8-eks-test/setup.yaml  -e \"tool_name=${each.value.tags.Name}\" "
+      "ansible-pull  -U https://github.com/testVinaycicd/learn-tf.git -C main  -i localhost, 8-eks-test/setup.yaml  -e \"tool_name=${each.value.tags.Name}\" -e ansible_python_interpreter=/usr/bin/python3 "
     ]
 
 
