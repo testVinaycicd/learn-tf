@@ -94,7 +94,10 @@ resource "null_resource" "server_setup" {
   provisioner "remote-exec" {
 
     inline = [
-
+      "sudo yum -y install python3",
+      "python3 --version || true",
+      # (optional) install ansible locally on the instance if you plan ansible-pull later
+      "sudo python3 -m pip install --upgrade pip",
       "sudo pip3.11 install ansible hvac",
       " do echo 'Waiting for DNS...'; sleep 5; done",
       "ansible-playbook -i localhost, setup-tool.yml  -e tool_name=${each.value.tags.Name} "
