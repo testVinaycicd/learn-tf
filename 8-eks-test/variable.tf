@@ -1,15 +1,12 @@
-variable "region"
-{
+variable "region" {
   type = string
   default = "us-east-2"
 }
-variable "environment"
-{
+variable "environment" {
   type = string
   default = "dev"
 }
-variable "instance_type"
-{
+variable "instance_type" {
   type = string
   default = "t3.micro"
 }
