@@ -100,7 +100,7 @@ resource "null_resource" "server_setup" {
       "sudo pip3 install ansible hvac",
 
       " sleep 5",
-      "ansible-playbook -i localhost, setup.yml  -e tool_name=${each.value.tags.Name} "
+      "ansible-playbook -i localhost, setup.yaml  -e tool_name=${each.value.tags.Name} "
     ]
 
 
