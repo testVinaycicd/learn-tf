@@ -446,3 +446,49 @@ resource "aws_route53_resolver_rule_association" "default_assoc" {
   resolver_rule_id = aws_route53_resolver_rule.forward_eks.id
   vpc_id           = data.aws_vpc.default.id
 }
+
+######################
+# KMS ENCRYPTION
+#####################
+resource "aws_kms_key" "eks" {
+  description = "${var.cluster_name}-eks-secrets-CMK"
+  deletion_window_in_days = 7
+  enable_key_rotation = true
+
+}
+
+# creates a alias name rather than uuid
+resource "aws_kms_alias" "eks" {
+  name          = "alias/eks/${var.cluster_name}-secrets"
+  target_key_id = aws_kms_key.eks.id
+}
+
+
+resource "aws_iam_policy" "eks_kms" {
+  name   = "${var.cluster_name}-ClusterEncryption"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = ["kms:Encrypt","kms:Decrypt","kms:DescribeKey","kms:ListGrants"],
+      Resource = aws_kms_key.eks.arn
+    }]
+  })
+
+}
+
+############################
+# IRSA (OIDC provider)
+############################
+# normally pods cant access aws services without credentials
+# with aws_iam_openid_connect_provider
+### kubernetes service accounts can assume iam roles directly
+### pods get temp aws credentials automatically
+### no need to hardcode keys in pods
+
+resource "aws_iam_openid_connect_provider" "oidc" {
+  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [] # AWS managed trust; omit unless your org mandates fixed thumbprints
+  depends_on      = [aws_eks_cluster.this]
+}

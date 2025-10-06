@@ -15,7 +15,7 @@ variable "cluster_name" {
 
 variable "kubernetes_version" {
   type        = string
-  default     = "1.30"
+  default     = "1.34"
 }
 
 # IMPORTANT: pass **PUBLIC** subnet IDs here for Level-1
@@ -33,7 +33,7 @@ variable "public_access_cidrs" {
 
 variable "node_instance_type" {
   type        = string
-  default     = "t3.medium"
+  default     = "t3.micro"
 }
 
 variable "private_subnet_ids" {
