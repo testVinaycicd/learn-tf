@@ -94,11 +94,21 @@ resource "null_resource" "server_setup" {
   provisioner "remote-exec" {
 
     inline = [
-      "sudo yum -y install python3 python3-pip",
-      "sudo pip3 install --upgrade pip",
-      # (optional) install ansible locally on the instance if you plan ansible-pull later
-      "sudo pip3 install ansible hvac",
+      "set -euo pipefail",
 
+      # Detect pkg manager (yum for AL2, dnf for AL2023)
+      "PKG=yum; command -v dnf >/dev/null 2>&1 && PKG=dnf",
+
+      # Install git, python3, pip3
+      "sudo $PKG -y install git python3 python3-pip",
+
+      # Upgrade pip and install Ansible + hvac
+      "sudo pip3 install --upgrade pip",
+      "sudo pip3 install 'ansible==9.*' 'hvac==2.*'",
+
+      # Sanity check
+      "ansible --version || true",
+      "python3 --version || true",
       " sleep 5",
       "ansible-pull  -U https://github.com/testVinaycicd/learn-tf.git -C main  -i localhost, 8-eks-test/setup.yaml  -e \"tool_name=${each.value.tags.Name}\" "
     ]
