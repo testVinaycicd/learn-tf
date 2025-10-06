@@ -95,20 +95,13 @@ resource "null_resource" "server_setup" {
 
     inline = [
       "set -euo pipefail",
-
-      # Detect pkg manager (yum for AL2, dnf for AL2023)
-      "PKG=yum; command -v dnf >/dev/null 2>&1 && PKG=dnf",
-
-      # Install git, python3, pip3
-      "sudo $PKG -y install git python3 python3-pip",
-
-      # Upgrade pip and install Ansible + hvac
-      "sudo pip3 install --upgrade pip",
-      "sudo pip3 install 'ansible==9.*' 'hvac==2.*'",
-
-      # Sanity check
+      # deps
+      "sudo yum -y install git",
+      # ansible 2.9 on AL2
+      "sudo amazon-linux-extras enable ansible2",
+      "sudo yum -y install ansible",
+      # run your playbook locally via ansible-pull
       "ansible --version || true",
-      "python3 --version || true",
       " sleep 5",
       "ansible-pull  -U https://github.com/testVinaycicd/learn-tf.git -C main  -i localhost, 8-eks-test/setup.yaml  -e \"tool_name=${each.value.tags.Name}\" "
     ]
