@@ -80,7 +80,7 @@ resource "null_resource" "server_setup" {
   depends_on = [aws_instance.servers]
 
   triggers = {
-    instance_id_change = aws_instance.servers.id
+    instance_id_change = each.value.id
   }
   connection {
     type        = "ssh"
