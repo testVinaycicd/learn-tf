@@ -5,7 +5,7 @@ metadata:
 spec:
     type: {{ .Values.service.type }}
     selector:
-      app: {{ .Value.component_name }}
+      app: {{ .Values.component_name }}
     ports:
       {{- include "robo.service.ports" . | indent 6 }}
 
