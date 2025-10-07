@@ -37,9 +37,9 @@ variable "node_instance_type" {
 }
 
 variable "private_subnet_ids" {
-  type        = list(string)
+
   description = "Private subnet IDs in at least two AZs (with NAT route)"
-  default = []
+
 }
 
 variable "access" {}
