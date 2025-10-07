@@ -1,5 +1,7 @@
 component_name: "frontend"
 
+replicas: 3
+
 configMapValues:
     CATALOGUE_HOST: catalogue
     CATALOGUE_PORT: "8080"
