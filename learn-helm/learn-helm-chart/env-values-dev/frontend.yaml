@@ -14,7 +14,7 @@ configMapValues:
 
 resource:
     minCpu: "50m"
-    minMemory: "64Mi"
+    minMemory: "256Mi"
     maxCpu: "300m"
     maxMemory: "256Mi"
 

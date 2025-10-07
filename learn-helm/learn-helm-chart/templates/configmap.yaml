@@ -4,5 +4,5 @@ metadata:
     {{- include "robo.metadata" . | indent 4 }}
 data:
   {{- range $k, $v := .Values.configMapValues  }}
-    {{ $k }}: {{ $v }}
+    {{ $k }}: "{{ $v | toString }}"
   {{- end  }}
