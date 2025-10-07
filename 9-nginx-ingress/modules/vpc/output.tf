@@ -36,7 +36,7 @@ output "public_route_table_id" {
 
 # Private subnets (map keyed by AZ)
 output "private_subnet_ids" {
-  value       = { for az, s in aws_subnet.private : az => s.id }
+  value       = [ for s in aws_subnet.private : s.id ]
   description = "Private subnet IDs keyed by AZ"
 }
 
