@@ -66,7 +66,7 @@ resource "aws_instance" "servers" {
   ami                    = "ami-09c813fb71547fc4f"
   instance_type          = "t3.micro"
   # key_name               = aws_key_pair.mikey_key.key_name
-  vpc_security_group_ids = ["sg-0171a68ab5d431564"]
+  vpc_security_group_ids = ["sg-0ba190cf2e0769cc9"]
   subnet_id = "subnet-021a482caefd9d301"
 
   tags = {
@@ -81,7 +81,7 @@ resource "aws_instance" "servers_private" {
   ami                    = "ami-09c813fb71547fc4f"
   instance_type          = "t3.micro"
   # key_name               = aws_key_pair.mikey_key.key_name
-  vpc_security_group_ids = ["sg-0171a68ab5d431564"]
+  vpc_security_group_ids = ["sg-0ba190cf2e0769cc9"]
   subnet_id = "subnet-08520f5eb31862969"
 
   tags = {
