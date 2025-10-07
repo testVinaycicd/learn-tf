@@ -25,21 +25,29 @@ spec:
             serviceAccountName: {{ .Values.component_name }}
             containers:
                 - name: {{ .Values.component_name }}
+
                   image: crysis307/{{ .Values.component_name }}:latest
                   ports: [{ containerPort: {{ .Values.service.port }} }]
                   envFrom:
                     - configMapRef:
                         name: {{ .Values.component_name }}
-                  {{ include "robo.resource" . | indent 12 }}
-            readinessProbe:
-                httpGet:
-                    path: /health
-                    port: {{ .Values.service.port }}
-                initialDelaySeconds: 5
-                periodSeconds: 10
-            livenessProbe:
-                httpGet:
-                    path: /health
-                    port: {{ .Values.service.port }}
-                initialDelaySeconds: 15
-                periodSeconds: 10
+                  resources:
+                      requests:
+                          cpu: "50m"
+                          memory: "256Mi"
+                      limits:
+                          cpu: "300m"
+                          memory: "512Mi"  # >= requests.memory
+
+#            readinessProbe:
+#                httpGet:
+#                    path: /health
+#                    port: {{ .Values.service.port }}
+#                initialDelaySeconds: 5
+#                periodSeconds: 10
+#            livenessProbe:
+#                httpGet:
+#                    path: /health
+#                    port: {{ .Values.service.port }}
+#                initialDelaySeconds: 15
+#                periodSeconds: 10
