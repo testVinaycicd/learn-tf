@@ -8,3 +8,9 @@ service:
     type: ClusterIP
     port: 8080
     targetPort: 8080
+
+resource:
+    minCpu: "50m"
+    minMemory: "256Mi"
+    maxCpu: "300m"
+    maxMemory: "256Mi"

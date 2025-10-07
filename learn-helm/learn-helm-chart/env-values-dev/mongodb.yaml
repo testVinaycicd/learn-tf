@@ -11,3 +11,9 @@ service:
     type: ClusterIP
     port: 27017
     targetPort: 27017
+
+resource:
+    minCpu: "50m"
+    minMemory: "256Mi"
+    maxCpu: "300m"
+    maxMemory: "256Mi"

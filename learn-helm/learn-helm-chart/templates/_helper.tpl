@@ -6,11 +6,11 @@ namespace: roboshop
 {{- define "robo.resource" }}
 resources:
     requests:
-        cpu: {{ default "100m" .Values.resource.minCpu }}
-        memory: {{ default "128Mi" .Values.resource.minMemory }}
+        cpu: {{  .Values.resource.minCpu }}
+        memory: {{  .Values.resource.minMemory }}
     limits:
-        cpu: {{ default "100m" .Values.resource.maxCpu }}
-        memory: {{ default "128Mi" .Values.resource.maxCpu }}
+        cpu: {{  .Values.resource.maxCpu }}
+        memory: {{  .Values.resource.maxCpu }}
 {{- end }}
 
 {{- define "robo.service.ports" }}
