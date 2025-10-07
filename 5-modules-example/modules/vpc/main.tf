@@ -35,6 +35,7 @@ locals {
 # Subnet in us-east-1b gets index 1 → 10.0.1.0/24
 
 resource "aws_subnet" "public" {
+
   for_each = local.az_map
   vpc_id = aws_vpc.this.id
   cidr_block = cidrsubnet(var.cidr,8 ,each.value  )
@@ -47,6 +48,7 @@ resource "aws_subnet" "public" {
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.this.id
@@ -118,6 +120,7 @@ resource "aws_route_table" "private" {
   for_each = aws_subnet.private
   vpc_id   = aws_vpc.this.id
   tags     = { Name = "${var.name}-private-rt-${each.key}" }
+
 }
 
 resource "aws_route" "private_default_via_nat" {
