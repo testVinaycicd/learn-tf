@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    {{- include "robo.metadata" . | indent 4 }}
+    labels:
+        app: {{ .Values.component_name }}
+spec:
+    replicas: {{ .Values.replicas }}
+    selector:
+        matchLabels:
+            app: {{ .Values.component_name }}
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxSurge: 1
+            maxUnavailable: 1
+    template:
+        metadata:
+            labels:
+                app: {{ .Values.component_name }}
+#       annotations:
+#           prometheus.io/scrape: "true"        # keep for later
+#           prometheus.io/port: "8080"
+        spec:
+            serviceAccountName: {{ .Values.component_name }}
+            containers:
+                - name: {{ .Values.component_name }}
+                  image: crysis307/{{ .Values.component_name }}:latest
+                  ports: [{ containerPort: {{ .Values.service.port }} }]
+                  envFrom:
+                    - configMapRef:
+                        name: {{ .Values.component_name }}
+                  {{ include "robo.resource" . | indent 12 }}
+            readinessProbe:
+                httpGet:
+                    path: /health
+                    port: {{ .Values.service.port }}
+                initialDelaySeconds: 5
+                periodSeconds: 10
+            livenessProbe:
+                httpGet:
+                    path: /health
+                    port: {{ .Values.service.port }}
+                initialDelaySeconds: 15
+                periodSeconds: 10

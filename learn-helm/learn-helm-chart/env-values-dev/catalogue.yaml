@@ -1,0 +1,10 @@
+component_name: "catalogue"
+
+configMapValues:
+    MONGO_URL: mongodb://admin:admin123@mongodb:27017/catalogue?authSource=admin
+    MONGO: "true"
+
+service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
