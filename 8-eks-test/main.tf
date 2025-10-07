@@ -106,11 +106,11 @@ resource "aws_security_group" "private_sg" {
   tags = { Name = "private-ssh-from-bastion" }
 }
 
-resource "aws_eip" "bastion_eip" {
-  instance = aws_instance.servers
-  domain   = "vpc"
-  tags     = { Name = "bastion-eip" }
-}
+# resource "aws_eip" "bastion_eip" {
+#   instance = aws_instance.servers
+#   domain   = "vpc"
+#   tags     = { Name = "bastion-eip" }
+# }
 
 # --- Create 2 EC2 instances ---
 resource "aws_instance" "servers" {
