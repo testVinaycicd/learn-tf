@@ -10,7 +10,7 @@ resources:
         memory: {{  .Values.resource.minMemory }}
     limits:
         cpu: {{  .Values.resource.maxCpu }}
-        memory: {{  .Values.resource.maxCpu }}
+        memory: {{  .Values.resource.maxMemory}}
 {{- end }}
 
 {{- define "robo.service.ports" }}
