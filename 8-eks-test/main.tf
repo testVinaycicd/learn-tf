@@ -60,13 +60,65 @@ locals {
   }
 }
 
+resource "aws_security_group" "bastion_sg" {
+  name        = "bastion-sg"
+  description = "SSH in from my IP, SSH out to private hosts"
+  vpc_id      = "vpc-0c31a6db3f85d3e72" # or your VPC id
+
+  ingress {
+    description = "SSH from my workstation"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.my_ip]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "bastion-sg" }
+}
+
+resource "aws_security_group" "private_sg" {
+  name        = "private-ssh-from-bastion"
+  description = "Allow SSH only from bastion SG"
+  vpc_id      = "vpc-0c31a6db3f85d3e72" # same VPC
+
+  ingress {
+    description              = "SSH from bastion"
+    from_port                = 22
+    to_port                  = 22
+    protocol                 = "tcp"
+    security_groups          = [aws_security_group.bastion_sg.id] # <-- key
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "private-ssh-from-bastion" }
+}
+
+resource "aws_eip" "bastion_eip" {
+  instance = aws_instance.servers.id
+  domain   = "vpc"
+  tags     = { Name = "bastion-eip" }
+}
+
 # --- Create 2 EC2 instances ---
 resource "aws_instance" "servers" {
   for_each               = local.instances
   ami                    = "ami-09c813fb71547fc4f"
   instance_type          = "t3.micro"
   # key_name               = aws_key_pair.mikey_key.key_name
-  vpc_security_group_ids = ["sg-0ba190cf2e0769cc9"]
+  vpc_security_group_ids = ["sg-0ba190cf2e0769cc9",aws_security_group.bastion_sg.id]
   subnet_id = "subnet-021a482caefd9d301"
 
   tags = {
@@ -81,7 +133,7 @@ resource "aws_instance" "servers_private" {
   ami                    = "ami-09c813fb71547fc4f"
   instance_type          = "t3.micro"
   # key_name               = aws_key_pair.mikey_key.key_name
-  vpc_security_group_ids = ["sg-0ba190cf2e0769cc9"]
+  vpc_security_group_ids = ["sg-0ba190cf2e0769cc9",aws_security_group.private_sg.id]
   subnet_id = "subnet-08520f5eb31862969"
 
   tags = {
