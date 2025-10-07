@@ -107,14 +107,13 @@ resource "aws_security_group" "private_sg" {
 }
 
 resource "aws_eip" "bastion_eip" {
-  instance = aws_instance.servers.id
+  instance = aws_instance.servers
   domain   = "vpc"
   tags     = { Name = "bastion-eip" }
 }
 
 # --- Create 2 EC2 instances ---
 resource "aws_instance" "servers" {
-  for_each               = local.instances
   ami                    = "ami-09c813fb71547fc4f"
   instance_type          = "t3.micro"
   # key_name               = aws_key_pair.mikey_key.key_name
@@ -122,9 +121,9 @@ resource "aws_instance" "servers" {
   subnet_id = "subnet-021a482caefd9d301"
 
   tags = {
-    Name        = each.value.name
+    Name        = "front"
     Environment = "dev"
-    Prompt      = each.value.name
+    Prompt      = "front"
   }
 }
 
