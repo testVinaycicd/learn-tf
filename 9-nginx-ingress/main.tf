@@ -23,12 +23,10 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-
   kubernetes {
+    config_path    = pathexpand("~/.kube/config")
     config_context = module.eks.cluster_name
-    config_path = pathexpand("~/.kube/config")
   }
-
 }
 
 
