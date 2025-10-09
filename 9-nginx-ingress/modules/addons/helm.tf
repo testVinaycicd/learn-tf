@@ -16,7 +16,7 @@ resource "null_resource" "tesd-config" {
 
 resource "helm_release" "ingress" {
   depends_on = [null_resource.kubeconfig]
-  name       = "ingress-nginx"
+  name       = "ingress-nginx-tf-1"
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
 
@@ -27,7 +27,7 @@ resource "helm_release" "ingress" {
 
 resource "helm_release" "cert-manager" {
   depends_on       = [null_resource.kubeconfig]
-  name             = "cert-manager"
+  name             = "cert-manager-tf-1"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
   namespace        = "cert-manager"
@@ -49,7 +49,7 @@ resource "null_resource" "cert-manager-cluster-issuer" {
 
 resource "helm_release" "external-dns" {
   depends_on = [null_resource.kubeconfig]
-  name       = "external-dns"
+  name       = "external-dns-tf-1"
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
 }
