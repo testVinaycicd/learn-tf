@@ -408,10 +408,8 @@ locals {
 }
 
 locals {
-  eks_private_domain = join(
-    ".",
-    slice(split(".", aws_eks_cluster.this.endpoint), 1, 4)
-  )
+  # From "https://…hash….<suffix>.<region>.eks.amazonaws.com" → "<suffix>.<region>.eks.amazonaws.com"
+  eks_private_domain = join(".", slice(split(".", trimprefix(aws_eks_cluster.this.endpoint, "https://")), 1, 4))
 }
 
 # -------- Forward rule in default VPC to EKS inbound endpoint --------
