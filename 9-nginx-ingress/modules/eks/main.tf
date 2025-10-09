@@ -237,17 +237,17 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "eks_vpc" {
 ###############################################
 
 # Default VPC route table: route to 10.0.0.0/16 via TGW
-resource "aws_route" "default_to_eks" {
-  route_table_id         = data.aws_vpc.default.main_route_table_id
-  destination_cidr_block = "10.0.0.0/16"
-  transit_gateway_id     = aws_ec2_transit_gateway.main.id
-}
-
-resource "aws_route" "default_to_eks_main" {
-  route_table_id         = data.aws_vpc.default.main_route_table_id
-  destination_cidr_block = "10.0.0.0/16"
-  transit_gateway_id     = aws_ec2_transit_gateway.main.id
-}
+# resource "aws_route" "default_to_eks" {
+#   route_table_id         = data.aws_vpc.default.main_route_table_id
+#   destination_cidr_block = "10.0.0.0/16"
+#   transit_gateway_id     = aws_ec2_transit_gateway.main.id
+# }
+#
+# resource "aws_route" "default_to_eks_main" {
+#   route_table_id         = data.aws_vpc.default.main_route_table_id
+#   destination_cidr_block = "10.0.0.0/16"
+#   transit_gateway_id     = aws_ec2_transit_gateway.main.id
+# }
 
 data "aws_route_tables" "private" {
   filter {
