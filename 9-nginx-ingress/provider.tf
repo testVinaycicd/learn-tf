@@ -3,7 +3,8 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = ">= 5.81.0, <= 5.100.0"   # or "5.100.0"
-    }
+    },
+
   }
 
   backend "s3" {
@@ -23,5 +24,9 @@ provider "aws" {
 }
 
 
-
+provider "helm" {
+  kubernetes = {
+    config_path = "~/.kube/config"
+  }
+}
 
