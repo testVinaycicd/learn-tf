@@ -43,3 +43,4 @@ variable "private_subnet_ids" {
 }
 
 variable "access" {}
+variable "private_rt_ids" {}

@@ -258,7 +258,8 @@ data "aws_route_tables" "private" {
 # EKS VPC private route table: route to 172.31.0.0/16 via TGW
 # Adjust if you have multiple private route tables
 resource "aws_route" "eks_to_default" {
-  for_each = toset(data.aws_route_tables.private.ids)
+
+  for_each = var.private_rt_ids
   route_table_id         = each.value
   destination_cidr_block = "172.31.0.0/16"
   transit_gateway_id     = aws_ec2_transit_gateway.main.id

@@ -13,3 +13,4 @@ variable "azs" {
 variable "name" {}
 variable "access" {}
 variable "instance_type" {}
+variable "private_rt_ids" {}

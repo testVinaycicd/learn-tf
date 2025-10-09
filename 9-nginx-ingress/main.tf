@@ -11,4 +11,5 @@ module "eks" {
   vpc_id = module.vpc.vpc_id
   access = var.access
   region = var.aws_region
+  private_rt_ids = module.vpc.private_route_table_ids
 }
