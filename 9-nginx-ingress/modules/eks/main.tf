@@ -407,11 +407,18 @@ locals {
   ]
 }
 
+locals {
+  eks_private_domain = join(
+    ".",
+    slice(split(".", aws_eks_cluster.this.endpoint), 1, 4)
+  )
+}
+
 # -------- Forward rule in default VPC to EKS inbound endpoint --------
 # Forward the EKS private endpoint zone to the EKS VPC.
 # Using the regional zone covers EKS endpoints: <hash>.<suffix>.us-east-2.eks.amazonaws.com
 resource "aws_route53_resolver_rule" "forward_eks" {
-  domain_name          = "us-east-1.eks.amazonaws.com"
+  domain_name          = local.eks_private_domain
   rule_type            = "FORWARD"
   resolver_endpoint_id = aws_route53_resolver_endpoint.outbound_default.id
 
