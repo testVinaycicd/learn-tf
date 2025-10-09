@@ -27,7 +27,7 @@ spec:
                 - name: {{ .Values.component_name }}
 
                   image: crysis307/{{ .Values.component_name }}:latest
-                  ports: [{ containerPort: {{ .Values.service.port }} }]
+                  ports: [{ containerPort: {{ .Values.service.targetPort }} }]
                   envFrom:
                     - configMapRef:
                         name: {{ .Values.component_name }}
