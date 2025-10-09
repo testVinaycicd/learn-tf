@@ -6,6 +6,14 @@ resource "null_resource" "kubeconfig" {
   }
 }
 
+resource "null_resource" "tesd-config" {
+  depends_on = [null_resource.kubeconfig]
+
+  provisioner "local-exec" {
+    command = "kubectl get nodes "
+  }
+}
+
 resource "helm_release" "ingress" {
   depends_on = [null_resource.kubeconfig]
   name       = "ingress-nginx"
