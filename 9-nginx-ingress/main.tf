@@ -16,8 +16,20 @@ module "eks" {
   private_rt_ids = module.vpc.private_route_table_ids
 }
 
-provider "kubernetes" { config_path = pathexpand("~/.kube/config") }
-provider "helm" { kubernetes { config_path = pathexpand("~/.kube/config") } }
+provider "kubernetes" {
+  config_context = module.eks.cluster_name
+  config_path = pathexpand("~/.kube/config")
+
+}
+
+provider "helm" {
+
+  kubernetes {
+    config_context = module.eks.cluster_name
+    config_path = pathexpand("~/.kube/config")
+  }
+
+}
 
 
 
