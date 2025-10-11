@@ -1,6 +1,6 @@
 component_name: "frontend"
 
-replicas: 3
+replicas: 2
 
 configMapValues:
     CATALOGUE_HOST: catalogue
@@ -22,5 +22,5 @@ resource:
 
 service:
     type: LoadBalancer
-    port: 8080
-    targetPort: 80
+    port: 80
+    targetPort: 8080

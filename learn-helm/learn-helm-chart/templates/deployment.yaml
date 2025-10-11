@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    {{- include "robo.metadata" . | indent 4 }}
+    name: {{  .Values.component_name }}
+    namespace: "roboshop"
     labels:
         app: {{ .Values.component_name }}
 spec:
@@ -18,36 +19,27 @@ spec:
         metadata:
             labels:
                 app: {{ .Values.component_name }}
-#       annotations:
-#           prometheus.io/scrape: "true"        # keep for later
-#           prometheus.io/port: "8080"
         spec:
             serviceAccountName: {{ .Values.component_name }}
             containers:
                 - name: {{ .Values.component_name }}
-
                   image: crysis307/{{ .Values.component_name }}:latest
-                  ports: [{ containerPort: {{ .Values.service.targetPort }} }]
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                      - containerPort: {{ .Values.service.targetPort  }}          # <- single source of truth
                   envFrom:
-                    - configMapRef:
-                        name: {{ .Values.component_name }}
+                      - configMapRef:
+                            name: {{ .Values.component_name }}
                   resources:
                       requests:
                           cpu: "50m"
                           memory: "256Mi"
                       limits:
                           cpu: "300m"
-                          memory: "512Mi"  # >= requests.memory
+                          memory: "512Mi"
 
-#            readinessProbe:
-#                httpGet:
-#                    path: /health
-#                    port: {{ .Values.service.port }}
-#                initialDelaySeconds: 5
-#                periodSeconds: 10
-#            livenessProbe:
-#                httpGet:
-#                    path: /health
-#                    port: {{ .Values.service.port }}
-#                initialDelaySeconds: 15
-#                periodSeconds: 10
+                  {{- if eq .Values.appName "mongodb" }}
+                  {{- include "robo.rediness.mongodb" . | nindent 18 }}  # container child keys -> +10 here
+                  {{- else }}
+                  {{- include "robo.rediness.frontend" . | nindent 18 }}
+                  {{- end }}

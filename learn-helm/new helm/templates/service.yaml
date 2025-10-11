@@ -1,0 +1,15 @@
+{{- $svc := .Values.service | default (dict) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.component_name }}{{- if eq .Values.component_name "frontend" }}-service{{ end }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.component_name }}
+spec:
+  type: {{ $svc.type | default "ClusterIP" }}
+  selector:
+    app: {{ .Values.component_name }}
+  ports:
+    - port: {{ $svc.port    | default .Values.appPort }}
+      targetPort: {{ $svc.targetPort | default .Values.appPort }}
