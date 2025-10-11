@@ -50,7 +50,7 @@ resource "helm_release" "cert-manager" {
   namespace        = kubernetes_namespace.ingress.metadata[0].name
 
 
-  set {
+  set = {
     name  = "installCRDs"
     value = "true"
   }
