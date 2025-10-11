@@ -15,28 +15,53 @@ resource "null_resource" "tesd-config" {
 }
 
 resource "helm_release" "ingress" {
-  depends_on = [null_resource.kubeconfig]
-  name       = "ingress-nginx-tf-1"
+  depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
+  name       = "ingress-nginx"
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
-
+  namespace  = "ingress-nginx"
   values = [
     file("${path.module }/helmconfig/ingress.yaml")
   ]
 }
 
+resource "null_resource" "wait_ingress_ready" {
+  depends_on = [helm_release.ingress]
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      kubectl -n ingress-nginx rollout status deploy/ingress-nginx-tf-1-controller --timeout=300s
+      # Also ensure the admission service exists (webhook target)
+      kubectl -n ingress-nginx get svc ingress-nginx-tf-1-controller-admission
+    EOT
+  }
+}
+
 resource "helm_release" "cert-manager" {
-  depends_on       = [null_resource.kubeconfig]
-  name             = "cert-manager-tf-1"
+  depends_on       = [null_resource.kubeconfig,null_resource.tesd-config]
+  name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
   namespace        = "cert-manager"
   create_namespace = true
 
   set_sensitive = [ {
-    name  = "crds.enabled"
+    name  = "installCRDs"
     value = "true"
   }]
+}
+
+# 3b) Wait for cert-manager components
+resource "null_resource" "wait_cert_manager" {
+  depends_on = [helm_release.cert-manager]
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      kubectl -n cert-manager rollout status deploy/cert-manager           --timeout=300s
+      kubectl -n cert-manager rollout status deploy/cert-manager-webhook   --timeout=300s
+      kubectl -n cert-manager rollout status deploy/cert-manager-cainjector --timeout=300s
+    EOT
+  }
 }
 
 resource "null_resource" "cert-manager-cluster-issuer" {
@@ -49,13 +74,13 @@ resource "null_resource" "cert-manager-cluster-issuer" {
 
 resource "helm_release" "external-dns" {
   depends_on = [null_resource.kubeconfig]
-  name       = "external-dns-tf-1"
+  name       = "external-dns"
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
 }
 
 resource "null_resource" "nginx_issuer" {
-  depends_on = [null_resource.kubeconfig, helm_release.cert-manager,null_resource.cert-manager-cluster-issuer,helm_release.external-dns]
+  depends_on = [null_resource.kubeconfig, helm_release.cert-manager,null_resource.cert-manager-cluster-issuer,helm_release.external-dns,null_resource.wait_ingress_ready]
 
   provisioner "local-exec" {
     command = "kubectl apply -f ${path.module}/helmconfig/nginx-ingress-setup.yml"
