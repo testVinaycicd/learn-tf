@@ -20,7 +20,7 @@ configMapValues:
 appPort: 8080
 
 service:
-    type: LoadBalancer      # for minikube you can keep this; or ClusterIP + ingress/port-forward
+    type: ClusterIP      # for minikube you can keep this; or ClusterIP + ingress/port-forward
     port: 8080              # client-facing
     targetPort: 8080        # MUST match appPort for your nginx image
 
