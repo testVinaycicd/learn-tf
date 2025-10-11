@@ -18,3 +18,4 @@ resources:
 replicas: 1
 appPort: 27017
 probeType: tcp
+namespace: "roboshop"

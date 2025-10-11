@@ -18,3 +18,4 @@ resources:
 appPort: 8080
 probeType: http
 
+namespace: "roboshop"

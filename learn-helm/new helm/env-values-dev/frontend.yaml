@@ -30,3 +30,4 @@ resources:
 
 # choose probe type per app (optional switch)
 probeType: http           # "http" for frontend/catalogue, "tcp" for mongodb
+namespace: "roboshop"
