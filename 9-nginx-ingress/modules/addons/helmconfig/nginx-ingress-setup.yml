@@ -6,23 +6,18 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-
 spec:
   ingressClassName: nginx
-  admissionWebhooks:
-    enabled: true
-    patch:
-      enabled: true
   tls:
     - hosts:
         - frontend-dev-test.mikeydevops1.online
-      secretName: yourdomain-tls
+      secretName: my-app-tls  # cert-manager will create/renew this
   rules:
     - host: frontend-dev-test.mikeydevops1.online
       http:
         paths:
           - path: /
-            pathType: ImplementationSpecific
+            pathType: Prefix
             backend:
               service:
                 name: frontend
