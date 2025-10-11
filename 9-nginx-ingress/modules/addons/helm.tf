@@ -15,13 +15,13 @@ resource "null_resource" "tesd-config" {
 }
 
 resource "kubernetes_namespace" "ingress" {
-  depends_on = [null_resource.kubeconfig,null_resource.tesd-config,kubernetes_namespace.ingress]
+  depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
 
   metadata { name = "ingress-nginx" }
 }
 
 resource "kubernetes_namespace" "cert_manager" {
-  depends_on = [null_resource.kubeconfig,null_resource.tesd-config,kubernetes_namespace.ingress]
+  depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
 
   metadata { name = "cert-manager" }
 }
