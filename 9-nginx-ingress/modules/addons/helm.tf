@@ -39,7 +39,7 @@ resource "null_resource" "wait_ingress_ready" {
 
 resource "helm_release" "cert-manager" {
   depends_on       = [null_resource.kubeconfig,null_resource.tesd-config]
-  name             = "cert-manager"
+  name             = "cert-manager-tf-1"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
   namespace        = "cert-manager"
@@ -47,7 +47,7 @@ resource "helm_release" "cert-manager" {
 
   set_sensitive = [ {
     name  = "installCRDs"
-    value = "true"
+    value = "false"
   }]
 }
 
