@@ -14,6 +14,14 @@ resource "null_resource" "tesd-config" {
   }
 }
 
+resource "kubernetes_namespace" "ingress" {
+  metadata { name = "ingress-nginx" }
+}
+
+resource "kubernetes_namespace" "cert_manager" {
+  metadata { name = "cert-manager" }
+}
+
 resource "helm_release" "ingress" {
   depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
   name       = "ingress-nginx"
@@ -23,45 +31,52 @@ resource "helm_release" "ingress" {
   values = [
     file("${path.module }/helmconfig/ingress.yaml")
   ]
+
+  wait    = true
+  timeout = 600
 }
 
 resource "null_resource" "wait_ingress_ready" {
   depends_on = [helm_release.ingress]
-  provisioner "local-exec" {
-    command = <<-EOT
-      set -e
-      kubectl -n ingress-nginx rollout status deploy/ingress-nginx-tf-1-controller --timeout=300s
-      # Also ensure the admission service exists (webhook target)
-      kubectl -n ingress-nginx get svc ingress-nginx-tf-1-controller-admission
-    EOT
-  }
+  # provisioner "local-exec" {
+  #   command = <<-EOT
+  #     set -e
+  #     kubectl -n ingress-nginx rollout status deploy/ingress-nginx-tf-1-controller --timeout=300s
+  #     # Also ensure the admission service exists (webhook target)
+  #     kubectl -n ingress-nginx get svc ingress-nginx-tf-1-controller-admission
+  #   EOT
+  # }
 }
 
 resource "helm_release" "cert-manager" {
   depends_on       = [null_resource.kubeconfig,null_resource.tesd-config]
-  name             = "cert-manager-tf-1"
+  name             = kubernetes_namespace.cert_manager.metadata[0].name
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
   namespace        = "cert-manager"
-  create_namespace = true
+
 
   set_sensitive = [ {
     name  = "installCRDs"
     value = "false"
   }]
+
+  wait    = true
+  timeout = 600
+
 }
 
 # 3b) Wait for cert-manager components
 resource "null_resource" "wait_cert_manager" {
   depends_on = [helm_release.cert-manager]
-  provisioner "local-exec" {
-    command = <<-EOT
-      set -e
-      kubectl -n cert-manager rollout status deploy/cert-manager           --timeout=300s
-      kubectl -n cert-manager rollout status deploy/cert-manager-webhook   --timeout=300s
-      kubectl -n cert-manager rollout status deploy/cert-manager-cainjector --timeout=300s
-    EOT
-  }
+  # provisioner "local-exec" {
+  #   command = <<-EOT
+  #     set -e
+  #     kubectl -n cert-manager rollout status deploy/cert-manager           --timeout=300s
+  #     kubectl -n cert-manager rollout status deploy/cert-manager-webhook   --timeout=300s
+  #     kubectl -n cert-manager rollout status deploy/cert-manager-cainjector --timeout=300s
+  #   EOT
+  # }
 }
 
 resource "null_resource" "cert-manager-cluster-issuer" {
