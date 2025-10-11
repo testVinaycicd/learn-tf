@@ -7,7 +7,7 @@ metadata:
   labels:
     app: {{ .Values.component_name }}
 spec:
-  type: {{ $svc.type | default "ClusterIP" }}
+  type: {{ default "ClusterIP" }}
   selector:
     app: {{ .Values.component_name }}
   ports:
