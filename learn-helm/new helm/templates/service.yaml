@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.component_name }}{{- if eq .Values.component_name "frontend" }}-service{{ end }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.component_name }}{{- if eq .Values.component_name "frontend" }}{{ end }}
+  namespace: "roboshop"
   labels:
     app: {{ .Values.component_name }}
 spec:
