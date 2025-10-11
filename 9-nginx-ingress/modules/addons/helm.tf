@@ -58,6 +58,6 @@ resource "null_resource" "nginx_issuer" {
   depends_on = [null_resource.kubeconfig, helm_release.cert-manager,null_resource.cert-manager-cluster-issuer,helm_release.external-dns]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/helmconfig/nginx-ingress-setup.yaml"
+    command = "kubectl apply -f ${path.module}/helmconfig/nginx-ingress-setup.yml"
   }
 }
