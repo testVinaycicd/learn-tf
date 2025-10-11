@@ -9,6 +9,10 @@ metadata:
 
 spec:
   ingressClassName: nginx
+  admissionWebhooks:
+    enabled: true
+    patch:
+      enabled: true
   tls:
     - hosts:
         - frontend-dev-test.mikeydevops1.online
