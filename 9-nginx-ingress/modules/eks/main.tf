@@ -43,8 +43,8 @@ resource "aws_eks_cluster" "this" {
   vpc_config {
     subnet_ids               = var.private_subnet_ids
     endpoint_private_access  = true
-    endpoint_public_access   = true
-    public_access_cidrs      = ["54.91.193.41/32"]
+    endpoint_public_access   = false
+    # public_access_cidrs      = ["54.91.193.41/32"]
   }
 
 
@@ -101,7 +101,7 @@ resource "aws_eks_node_group" "default" {
 
   scaling_config {
     desired_size = 1
-    min_size     = 1
+    min_size     = 3
     max_size     = 10
   }
 

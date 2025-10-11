@@ -11,6 +11,8 @@ resource "aws_vpc" "this" {
   tags = {
     Name = "${var.name}-vpc"
   }
+  enable_dns_hostnames = true
+  enable_dns_support = true
 }
 
 resource "aws_internet_gateway" "this" {
