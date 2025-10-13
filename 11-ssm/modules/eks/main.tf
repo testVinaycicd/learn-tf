@@ -441,22 +441,6 @@ resource "aws_route53_resolver_rule_association" "default_assoc" {
   vpc_id           = data.aws_vpc.default.id
 }
 
-# Get route table association for each private subnet used by the cluster
-data "aws_route_table" "eks_private_rt_for_subnet" {
-  for_each = toset(var.private_subnet_ids)
-  subnet_id = each.key
-}
-
-# Add the return route to the default VPC via TGW on each of those RTs
-resource "aws_route" "eks_to_default_from_actual_private_rts" {
-  for_each               = data.aws_route_table.eks_private_rt_for_subnet
-  route_table_id         = each.value.id
-  destination_cidr_block = "172.31.0.0/16"                  # default VPC CIDR
-  transit_gateway_id     = aws_ec2_transit_gateway.main.id
-  depends_on             = [aws_ec2_transit_gateway_vpc_attachment.eks_vpc]
-}
-
-
 ############################
 # IRSA (OIDC provider)
 ############################
