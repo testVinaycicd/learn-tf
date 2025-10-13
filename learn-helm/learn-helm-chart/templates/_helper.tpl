@@ -1,6 +1,6 @@
 {{- define "robo.metadata" }}
 name: {{ default "noname" .Values.component_name }}
-namespace: roboshop
+#namespace: roboshop
 {{- end }}
 
 {{- define "robo.resource" }}
