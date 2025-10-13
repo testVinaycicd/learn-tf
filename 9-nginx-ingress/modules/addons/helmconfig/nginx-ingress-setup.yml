@@ -5,7 +5,7 @@ metadata:
   name: frontend
 #  namespace: roboshop
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     external-dns.alpha.kubernetes.io/hostname: frontend-dev-test.mikeydevops1.online
