@@ -441,6 +441,25 @@ resource "aws_route53_resolver_rule_association" "default_assoc" {
   vpc_id           = data.aws_vpc.default.id
 }
 
+# Default VPC (data)
+data "aws_vpc" "default" { default = true }
+
+# The route table actually associated to the EC2 subnet (set this var to your EC2 subnet id)
+variable "default_ec2_subnet_id" { type = string }
+
+data "aws_route_table" "rt_for_ec2_subnet" {
+  subnet_id = var.default_ec2_subnet_id
+}
+
+# If the subnet uses the main RT, the data above returns that main RT.
+# Add 10.0.0.0/16 → TGW there
+resource "aws_route" "default_to_eks_for_ec2rt" {
+  route_table_id         = data.aws_route_table.rt_for_ec2_subnet.id
+  destination_cidr_block = "10.0.0.0/16"
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
+}
+
+
 ############################
 # IRSA (OIDC provider)
 ############################
