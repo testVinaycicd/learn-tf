@@ -70,17 +70,17 @@ resource "null_resource" "cert-manager-cluster-issuer" {
   }
 }
 
-# resource "helm_release" "external-dns" {
-#   depends_on = [null_resource.kubeconfig,helm_release.ingress]
-#   name       = "external-dns"
-#   repository = "https://kubernetes-sigs.github.io/external-dns/"
-#   chart      = "external-dns"
-#   namespace  = "kube-system"
-#
-#   wait    = true
-#   timeout = 600
-#
-# }
+resource "helm_release" "external-dns" {
+  depends_on = [null_resource.kubeconfig,helm_release.ingress]
+  name       = "external-dns"
+  repository = "https://kubernetes-sigs.github.io/external-dns/"
+  chart      = "external-dns"
+  namespace  = "kube-system"
+
+  wait    = true
+  timeout = 600
+
+}
 # resource "null_resource" "wait_ingress_ready" {
 #   depends_on = [helm_release.ingress]
 #
