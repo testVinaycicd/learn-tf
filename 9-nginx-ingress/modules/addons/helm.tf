@@ -75,68 +75,6 @@ resource "null_resource" "cert-manager-cluster-issuer" {
 
 
 
-data "aws_eks_cluster" "this" {
-  name = var.cluster_name
-}
-
-locals {
-  external_dns_sa_name      = "external-dns"
-  external_dns_sa_namespace = "kube-system"
-}
-
-# Look up the existing IAM OIDC provider using the issuer URL
-data "aws_iam_openid_connect_provider" "this" {
-  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
-
-# ExternalDNS IRSA trust policy
-data "aws_iam_policy_document" "external_dns_assume" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-    effect  = "Allow"
-
-    principals {
-      type        = "Federated"
-      identifiers = [data.aws_iam_openid_connect_provider.this.arn]
-    }
-
-    condition {
-      test     = "StringEquals"
-      # issuer host (no https://) + :sub
-      variable = "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub"
-      values   = ["system:serviceaccount:${local.external_dns_sa_namespace}:${local.external_dns_sa_name}"]
-    }
-  }
-}
-
-
-resource "aws_iam_policy" "external_dns" {
-  name   = "${var.cluster_name}-ExternalDNS"
-  policy = data.aws_iam_policy_document.external_dns_policy.json
-}
-
-data "aws_iam_policy_document" "external_dns_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "route53:ChangeResourceRecordSets",
-      "route53:ListHostedZones",
-      "route53:ListHostedZonesByName",
-      "route53:ListResourceRecordSets"
-    ]
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_role" "external_dns" {
-  name               = "${var.cluster_name}-external-dns"
-  assume_role_policy = data.aws_iam_policy_document.external_dns_assume.json
-}
-
-resource "aws_iam_role_policy_attachment" "external_dns" {
-  role       = aws_iam_role.external_dns.name
-  policy_arn = aws_iam_policy.external_dns.arn
-}
 
 
 
@@ -171,7 +109,7 @@ resource "helm_release" "external-dns" {
 
   depends_on = [
 
-    aws_iam_role_policy_attachment.external_dns,null_resource.kubeconfig,
+    null_resource.kubeconfig,
     helm_release.ingress
   ]
 
