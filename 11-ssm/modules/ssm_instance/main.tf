@@ -12,6 +12,7 @@ provider "aws" {
 variable "region"            { default = "us-east-1" }
 variable "vpc_id"            { type = string }
 variable "private_subnet_id" { type = string }
+variable "vpc_cidr"          { type = string }
 
 # Security group for the instance: block inbound, allow HTTPS out
 resource "aws_security_group" "ec2" {
@@ -38,7 +39,7 @@ resource "aws_security_group" "vpce" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/8","172.16.0.0/12","192.168.0.0/16"] # tighten to your VPC CIDR
+    cidr_blocks = [var.vpc_cidr] # tighten to your VPC CIDR
   }
 
   egress {

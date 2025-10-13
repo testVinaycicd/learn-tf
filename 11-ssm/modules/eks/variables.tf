@@ -33,7 +33,7 @@ variable "public_access_cidrs" {
 
 variable "node_instance_type" {
   type        = string
-  default     = "t3.medium"
+  default     = "t2.micro"
 }
 
 variable "private_subnet_ids" {
