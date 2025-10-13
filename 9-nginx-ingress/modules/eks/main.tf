@@ -168,6 +168,17 @@ resource "aws_security_group_rule" "nodes_to_api" {
   source_security_group_id = aws_security_group.nodes.id
 }
 
+resource "aws_security_group_rule" "allow_apiserver_to_nginx_webhook" {
+  type                     = "ingress"
+  description              = "Allow EKS control plane to reach ingress-nginx admission webhook"
+  from_port                = 8443
+  to_port                  = 8443
+  protocol                 = "tcp"
+  source_security_group_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+  security_group_id        = aws_security_group.nodes.id
+
+}
+
 
 #########################################
 resource "aws_eks_access_entry" "main" {
