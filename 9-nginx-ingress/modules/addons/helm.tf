@@ -80,6 +80,24 @@ resource "helm_release" "external-dns" {
   wait    = true
   timeout = 600
 
+  values = [
+    yamlencode({
+      provider     = "aws"
+      policy       = "upsert-only"
+      registry     = "txt"
+      txtOwnerId   = "mikey"
+      domainFilters = ["mikeydevops1.online"]
+      sources      = ["ingress", "service"]
+      aws = {
+        zoneType = "public"
+      }
+      logLevel  = "info"
+      interval  = "1m"
+    })
+  ]
+
+
+
 }
 # resource "null_resource" "wait_ingress_ready" {
 #   depends_on = [helm_release.ingress]
