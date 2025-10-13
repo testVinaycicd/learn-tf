@@ -70,6 +70,11 @@ resource "null_resource" "cert-manager-cluster-issuer" {
   }
 }
 
+
+
+
+
+
 data "aws_eks_cluster" "this" {
   name = var.cluster_name
 }
@@ -99,21 +104,7 @@ data "aws_iam_policy_document" "external_dns_assume" {
   }
 }
 
-data "aws_iam_policy_document" "external_dns_assume" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-    effect  = "Allow"
-    principals {
-      type        = "Federated"
-      identifiers = [data.aws_iam_openid_connect_provider.this.arn]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub"
-      values   = ["system:serviceaccount:${local.external_dns_sa_namespace}:${local.external_dns_sa_name}"]
-    }
-  }
-}
+
 
 resource "aws_iam_policy" "external_dns" {
   name   = "${var.cluster_name}-ExternalDNS"
@@ -133,6 +124,16 @@ data "aws_iam_policy_document" "external_dns_policy" {
   }
 }
 
+resource "aws_iam_role" "external_dns" {
+  name               = "${var.cluster_name}-external-dns"
+  assume_role_policy = data.aws_iam_policy_document.external_dns_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "external_dns" {
+  role       = aws_iam_role.external_dns.name
+  policy_arn = aws_iam_policy.external_dns.arn
+}
+
 resource "kubernetes_service_account" "external_dns" {
   metadata {
     name      = local.external_dns_sa_name
@@ -146,15 +147,7 @@ resource "kubernetes_service_account" "external_dns" {
   }
 }
 
-resource "aws_iam_role" "external_dns" {
-  name               = "${var.cluster_name}-external-dns"
-  assume_role_policy = data.aws_iam_policy_document.external_dns_assume.json
-}
 
-resource "aws_iam_role_policy_attachment" "external_dns" {
-  role       = aws_iam_role.external_dns.name
-  policy_arn = aws_iam_policy.external_dns.arn
-}
 resource "helm_release" "external-dns" {
   name       = "external-dns"
   repository = "https://kubernetes-sigs.github.io/external-dns/"
@@ -192,6 +185,10 @@ resource "helm_release" "external-dns" {
 
 
 }
+
+
+
+
 # resource "null_resource" "wait_ingress_ready" {
 #   depends_on = [helm_release.ingress]
 #
