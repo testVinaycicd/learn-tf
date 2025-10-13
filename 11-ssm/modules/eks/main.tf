@@ -407,34 +407,40 @@ locals {
   ]
 }
 
+# Correct the derived domain to: "<suffix>.<region>.eks.amazonaws.com"
 locals {
-  # From "https://…hash….<suffix>.<region>.eks.amazonaws.com" → "<suffix>.<region>.eks.amazonaws.com"
-  eks_private_domain = join(".", slice(split(".", trimprefix(aws_eks_cluster.this.endpoint, "https://")), 1, 4))
+  # Example endpoint: https://7071A19E...gr7.us-east-1.eks.amazonaws.com
+  # After split("."): ["7071A19E...", "gr7", "us-east-1", "eks", "amazonaws", "com"]
+  # Drop the first label and join the rest: "gr7.us-east-1.eks.amazonaws.com"
+  eks_private_domain = join(".", slice(
+    split(".", trimprefix(aws_eks_cluster.this.endpoint, "https://")),
+    1,
+    length(split(".", trimprefix(aws_eks_cluster.this.endpoint, "https://")))
+  ))
 }
+
 
 # -------- Forward rule in default VPC to EKS inbound endpoint --------
 # Forward the EKS private endpoint zone to the EKS VPC.
 # Using the regional zone covers EKS endpoints: <hash>.<suffix>.us-east-2.eks.amazonaws.com
 resource "aws_route53_resolver_rule" "forward_eks" {
-  domain_name          = local.eks_private_domain
+  domain_name          = local.eks_private_domain     # e.g., gr7.us-east-1.eks.amazonaws.com
   rule_type            = "FORWARD"
   resolver_endpoint_id = aws_route53_resolver_endpoint.outbound_default.id
 
   dynamic "target_ip" {
     for_each = local.inbound_ips
-    content {
-      ip = target_ip.value
-    }
+    content { ip = target_ip.value }
   }
 
-  name = "forward-eks-us-east-2"
+  name = "forward-eks-${var.region}"
 }
 
-# Associate the rule with the default VPC so instances there use it
 resource "aws_route53_resolver_rule_association" "default_assoc" {
   resolver_rule_id = aws_route53_resolver_rule.forward_eks.id
   vpc_id           = data.aws_vpc.default.id
 }
+
 ############################
 # IRSA (OIDC provider)
 ############################
