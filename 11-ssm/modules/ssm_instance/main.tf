@@ -129,7 +129,7 @@ data "aws_ssm_parameter" "al2023_ami" {
 }
 
 resource "aws_instance" "bastionless_priv" {
-  ami                         = "ami-09c813fb71547fc4f"
+  ami                         = data.aws_ssm_parameter.al2023_ami.value
   instance_type               = "t3.micro"
   subnet_id                   = var.private_subnet_id
   associate_public_ip_address = false
