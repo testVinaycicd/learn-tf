@@ -451,11 +451,12 @@ variable "default_ec2_subnet_id" {
 }
 
 # 1) Get the subnet to learn its VPC
+# Subnet + VPC context
 data "aws_subnet" "ec2" {
   id = var.default_ec2_subnet_id
 }
 
-# 2) Try to find a route table explicitly associated to the subnet
+# Explicitly associated route table(s) for this subnet (may be empty)
 data "aws_route_tables" "by_subnet" {
   filter {
     name   = "association.subnet-id"
@@ -463,7 +464,7 @@ data "aws_route_tables" "by_subnet" {
   }
 }
 
-# 3) Also fetch the main RT of the VPC (fallback)
+# Main route table of the VPC (exactly one)
 data "aws_route_tables" "main_in_vpc" {
   vpc_id = data.aws_subnet.ec2.vpc_id
   filter {
@@ -472,14 +473,15 @@ data "aws_route_tables" "main_in_vpc" {
   }
 }
 
-# 4) Choose the right RT id: explicit if present, else main
 locals {
-  rt_id_for_ec2_subnet = length(data.aws_route_tables.by_subnet.ids) > 0 ?
-    data.aws_route_tables.by_subnet.ids[0] :
-    data.aws_route_tables.main_in_vpc.ids[0]
+  rt_id_for_ec2_subnet = (
+    length(data.aws_route_tables.by_subnet.ids) > 0
+    ? data.aws_route_tables.by_subnet.ids[0]
+    : data.aws_route_tables.main_in_vpc.ids[0]
+  )
 }
 
-# 5) Create the TGW route in that RT
+
 resource "aws_route" "default_to_eks_for_ec2rt" {
   route_table_id         = local.rt_id_for_ec2_subnet
   destination_cidr_block = "10.0.0.0/16"
