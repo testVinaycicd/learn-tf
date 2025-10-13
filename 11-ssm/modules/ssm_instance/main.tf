@@ -7,7 +7,7 @@ variable "vpc_cidr"          { type = string }
 
 # Security group for the instance: block inbound, allow HTTPS out
 resource "aws_security_group" "ec2" {
-  name        = "sg-ec2-ssm-private"
+  name        = "ec2-ssm-private"
   description = "No inbound; egress 443 for SSM/endpoints"
   vpc_id      = var.vpc_id
 
@@ -23,7 +23,7 @@ resource "aws_security_group" "ec2" {
 
 # SG for VPC Interface Endpoints (you can reuse an existing one)
 resource "aws_security_group" "vpce" {
-  name   = "sg-vpce-ssm"
+  name   = "ec2-ssm-private-vpc"
   vpc_id = var.vpc_id
 
   ingress {
