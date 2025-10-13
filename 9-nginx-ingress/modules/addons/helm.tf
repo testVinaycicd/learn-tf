@@ -70,8 +70,92 @@ resource "null_resource" "cert-manager-cluster-issuer" {
   }
 }
 
+data "aws_eks_cluster" "this" {
+  name = var.cluster_name
+}
+
+locals {
+  external_dns_sa_name      = "external-dns"
+  external_dns_sa_namespace = "kube-system"
+}
+
+data "aws_iam_openid_connect_provider" "this" {
+  arn = data.aws_eks_cluster.this.identity[0].oidc[0].issuer_arn
+}
+
+data "aws_iam_policy_document" "external_dns_assume" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [data.aws_iam_openid_connect_provider.this.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub"
+      values   = ["system:serviceaccount:${local.external_dns_sa_namespace}:${local.external_dns_sa_name}"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "external_dns_assume" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [data.aws_iam_openid_connect_provider.this.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub"
+      values   = ["system:serviceaccount:${local.external_dns_sa_namespace}:${local.external_dns_sa_name}"]
+    }
+  }
+}
+
+resource "aws_iam_policy" "external_dns" {
+  name   = "${var.cluster_name}-ExternalDNS"
+  policy = data.aws_iam_policy_document.external_dns_policy.json
+}
+
+data "aws_iam_policy_document" "external_dns_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "route53:ChangeResourceRecordSets",
+      "route53:ListHostedZones",
+      "route53:ListHostedZonesByName",
+      "route53:ListResourceRecordSets"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "kubernetes_service_account" "external_dns" {
+  metadata {
+    name      = local.external_dns_sa_name
+    namespace = local.external_dns_sa_namespace
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns.arn
+    }
+    labels = {
+      "app.kubernetes.io/name" = "external-dns"
+    }
+  }
+}
+
+resource "aws_iam_role" "external_dns" {
+  name               = "${var.cluster_name}-external-dns"
+  assume_role_policy = data.aws_iam_policy_document.external_dns_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "external_dns" {
+  role       = aws_iam_role.external_dns.name
+  policy_arn = aws_iam_policy.external_dns.arn
+}
 resource "helm_release" "external-dns" {
-  depends_on = [null_resource.kubeconfig,helm_release.ingress]
   name       = "external-dns"
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
@@ -82,6 +166,10 @@ resource "helm_release" "external-dns" {
 
   values = [
     yamlencode({
+      serviceAccount = {
+        create = false
+        name   = local.external_dns_sa_name
+      }
       provider     = "aws"
       policy       = "upsert-only"
       registry     = "txt"
@@ -96,6 +184,11 @@ resource "helm_release" "external-dns" {
     })
   ]
 
+  depends_on = [
+    kubernetes_service_account.external_dns,
+    aws_iam_role_policy_attachment.external_dns,null_resource.kubeconfig,
+    helm_release.ingress
+  ]
 
 
 }
