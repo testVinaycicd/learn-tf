@@ -84,26 +84,30 @@ locals {
   external_dns_sa_namespace = "kube-system"
 }
 
+# Look up the existing IAM OIDC provider using the issuer URL
 data "aws_iam_openid_connect_provider" "this" {
-  arn = data.aws_eks_cluster.this.identity[0].oidc[0].issuer_arn
+  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
 
+# ExternalDNS IRSA trust policy
 data "aws_iam_policy_document" "external_dns_assume" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
+
     principals {
       type        = "Federated"
       identifiers = [data.aws_iam_openid_connect_provider.this.arn]
     }
+
     condition {
       test     = "StringEquals"
+      # issuer host (no https://) + :sub
       variable = "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub"
       values   = ["system:serviceaccount:${local.external_dns_sa_namespace}:${local.external_dns_sa_name}"]
     }
   }
 }
-
 
 
 resource "aws_iam_policy" "external_dns" {
