@@ -19,8 +19,8 @@ module "eks" {
 
 
 
-module "addons" {
-  source     = "./modules/addons"
-  depends_on = [module.eks]      # ensures cluster exists before planning this module
-
-}
+# module "addons" {
+#   source     = "./modules/addons"
+#   depends_on = [module.eks]      # ensures cluster exists before planning this module
+#
+# }
