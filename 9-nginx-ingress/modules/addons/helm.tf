@@ -14,24 +14,24 @@ resource "null_resource" "tesd-config" {
   }
 }
 
-resource "kubernetes_namespace" "ingress" {
-  depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
-
-  metadata { name = "ingress-nginx" }
-}
-
-resource "kubernetes_namespace" "cert_manager" {
-  depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
-
-  metadata { name = "cert-manager" }
-}
+# resource "kubernetes_namespace" "ingress" {
+#   depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
+#
+#   metadata { name = "ingress-nginx" }
+# }
+#
+# resource "kubernetes_namespace" "cert_manager" {
+#   depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
+#
+#   metadata { name = "cert-manager" }
+# }
 
 resource "helm_release" "ingress" {
-  depends_on = [null_resource.kubeconfig,null_resource.tesd-config,kubernetes_namespace.ingress]
+  depends_on = [null_resource.kubeconfig,null_resource.tesd-config]
   name       = "ingress-nginx"
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
-  namespace  = kubernetes_namespace.ingress.metadata[0].name
+  namespace  = "ingress-nginx"
   values = [
     file("${path.module }/helmconfig/ingress.yaml")
   ]
@@ -43,11 +43,11 @@ resource "helm_release" "ingress" {
 
 
 resource "helm_release" "cert-manager" {
-  depends_on       = [null_resource.kubeconfig,kubernetes_namespace.cert_manager,null_resource.tesd-config]
-  name             = kubernetes_namespace.cert_manager.metadata[0].name
+  depends_on       = [null_resource.kubeconfig,null_resource.tesd-config]
+  name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
-  namespace        = kubernetes_namespace.cert_manager.metadata[0].name
+  namespace        = "cert-manager"
 
 
   set  = [{
