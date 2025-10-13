@@ -445,16 +445,43 @@ resource "aws_route53_resolver_rule_association" "default_assoc" {
 #data "aws_vpc" "default" { default = true }
 
 # The route table actually associated to the EC2 subnet (set this var to your EC2 subnet id)
-variable "default_ec2_subnet_id" { default = "subnet-068d93372de56df27" }
-
-data "aws_route_table" "rt_for_ec2_subnet" {
-  subnet_id = var.default_ec2_subnet_id
+variable "default_ec2_subnet_id" {
+  type    = string
+  default = "subnet-068d93372de56df27"
 }
 
-# If the subnet uses the main RT, the data above returns that main RT.
-# Add 10.0.0.0/16 → TGW there
+# 1) Get the subnet to learn its VPC
+data "aws_subnet" "ec2" {
+  id = var.default_ec2_subnet_id
+}
+
+# 2) Try to find a route table explicitly associated to the subnet
+data "aws_route_tables" "by_subnet" {
+  filter {
+    name   = "association.subnet-id"
+    values = [var.default_ec2_subnet_id]
+  }
+}
+
+# 3) Also fetch the main RT of the VPC (fallback)
+data "aws_route_tables" "main_in_vpc" {
+  vpc_id = data.aws_subnet.ec2.vpc_id
+  filter {
+    name   = "association.main"
+    values = ["true"]
+  }
+}
+
+# 4) Choose the right RT id: explicit if present, else main
+locals {
+  rt_id_for_ec2_subnet = length(data.aws_route_tables.by_subnet.ids) > 0 ?
+    data.aws_route_tables.by_subnet.ids[0] :
+    data.aws_route_tables.main_in_vpc.ids[0]
+}
+
+# 5) Create the TGW route in that RT
 resource "aws_route" "default_to_eks_for_ec2rt" {
-  route_table_id         = data.aws_route_table.rt_for_ec2_subnet.id
+  route_table_id         = local.rt_id_for_ec2_subnet
   destination_cidr_block = "10.0.0.0/16"
   transit_gateway_id     = aws_ec2_transit_gateway.main.id
 }
