@@ -8,6 +8,7 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    external-dns.alpha.kubernetes.io/hostname: frontend-dev-test.mikeydevops1.online
 spec:
   ingressClassName: nginx
   tls:

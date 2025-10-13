@@ -104,12 +104,12 @@ resource "helm_release" "external-dns" {
 #   }
 # }
 #
-# resource "null_resource" "nginx_issuer" {
-#   depends_on = [null_resource.kubeconfig, helm_release.cert-manager,null_resource.cert-manager-cluster-issuer,helm_release.external-dns,helm_release.ingress,null_resource.wait_ingress_ready]
-#
-#   provisioner "local-exec" {
-#     command = "kubectl apply -f ${path.module}/helmconfig/nginx-ingress-setup.yml"
-#   }
-#
-#
-# }
+resource "null_resource" "nginx_issuer" {
+  depends_on = [null_resource.kubeconfig, helm_release.cert-manager,null_resource.cert-manager-cluster-issuer,helm_release.external-dns,helm_release.ingress]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.module}/helmconfig/nginx-ingress-setup.yml"
+  }
+
+
+}
