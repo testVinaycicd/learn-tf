@@ -442,7 +442,7 @@ resource "aws_route53_resolver_rule_association" "default_assoc" {
 }
 
 # Default VPC (data)
-data "aws_vpc" "default" { default = true }
+#data "aws_vpc" "default" { default = true }
 
 # The route table actually associated to the EC2 subnet (set this var to your EC2 subnet id)
 variable "default_ec2_subnet_id" { type = string }
