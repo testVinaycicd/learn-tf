@@ -138,18 +138,6 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
   policy_arn = aws_iam_policy.external_dns.arn
 }
 
-resource "kubernetes_service_account" "external_dns" {
-  metadata {
-    name      = local.external_dns_sa_name
-    namespace = local.external_dns_sa_namespace
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns.arn
-    }
-    labels = {
-      "app.kubernetes.io/name" = "external-dns"
-    }
-  }
-}
 
 
 resource "helm_release" "external-dns" {
@@ -164,8 +152,8 @@ resource "helm_release" "external-dns" {
   values = [
     yamlencode({
       serviceAccount = {
-        create = false
-        name   = local.external_dns_sa_name
+        create = true
+        name   = "external-dns"
       }
       provider     = "aws"
       policy       = "upsert-only"
@@ -182,7 +170,7 @@ resource "helm_release" "external-dns" {
   ]
 
   depends_on = [
-    kubernetes_service_account.external_dns,
+
     aws_iam_role_policy_attachment.external_dns,null_resource.kubeconfig,
     helm_release.ingress
   ]
