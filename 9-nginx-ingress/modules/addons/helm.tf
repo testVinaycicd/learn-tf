@@ -79,76 +79,76 @@ resource "null_resource" "cert-manager-cluster-issuer" {
 
 
 
-# resource "helm_release" "external-dns" {
-#   name       = "external-dns"
-#   repository = "https://kubernetes-sigs.github.io/external-dns/"
-#   chart      = "external-dns"
-#   namespace  = "kube-system"
-#
-#   wait    = true
-#   timeout = 600
-#
-#   values = [
-#     yamlencode({
-#       serviceAccount = {
-#         create = true
-#         name   = "external-dns"
-#       }
-#       provider     = "aws"
-#       policy       = "upsert-only"
-#       registry     = "txt"
-#       txtOwnerId   = "mikey"
-#       domainFilters = ["mikeydevops1.online"]
-#       sources      = ["ingress", "service"]
-#       aws = {
-#         zoneType = "public"
-#       }
-#       logLevel  = "info"
-#       interval  = "1m"
-#     })
-#   ]
-#
-#   depends_on = [
-#
-#     null_resource.kubeconfig,
-#     helm_release.ingress
-#   ]
-#
-#
-# }
-#
-#
-#
-#
-# # resource "null_resource" "wait_ingress_ready" {
-# #   depends_on = [helm_release.ingress]
-# #
-# #   provisioner "local-exec" {
-# #     command = <<-EOT
-# #       set -euo pipefail
-# #
-# #       # 1) Controller up
-# #       kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
-# #         --for=condition=Available=True --timeout=5m
-# #
-# #       # 2) Admission jobs completed (names used by the official chart)
-# #       kubectl -n ingress-nginx wait job/ingress-nginx-admission-create \
-# #         --for=condition=complete --timeout=5m || true
-# #       kubectl -n ingress-nginx wait job/ingress-nginx-admission-patch \
-# #         --for=condition=complete --timeout=5m || true
-# #
-# #       # 3) Webhook object exists and has CABundle populated (best-effort check)
-# #       kubectl get validatingwebhookconfiguration ingress-nginx-admission >/dev/null 2>&1 || true
-# #     EOT
-# #   }
-# # }
-# #
-# resource "null_resource" "nginx_issuer" {
-#   depends_on = [null_resource.kubeconfig, helm_release.cert-manager,null_resource.cert-manager-cluster-issuer,helm_release.external-dns,helm_release.ingress]
+resource "helm_release" "external-dns" {
+  name       = "external-dns"
+  repository = "https://kubernetes-sigs.github.io/external-dns/"
+  chart      = "external-dns"
+  namespace  = "kube-system"
+
+  wait    = true
+  timeout = 600
+
+  values = [
+    yamlencode({
+      serviceAccount = {
+        create = true
+        name   = "external-dns"
+      }
+      provider     = "aws"
+      policy       = "upsert-only"
+      registry     = "txt"
+      txtOwnerId   = "mikey"
+      domainFilters = ["mikeydevops1.online"]
+      sources      = ["ingress", "service"]
+      aws = {
+        zoneType = "public"
+      }
+      logLevel  = "info"
+      interval  = "1m"
+    })
+  ]
+
+  depends_on = [
+
+    null_resource.kubeconfig,
+    helm_release.ingress
+  ]
+
+
+}
+
+
+
+
+# resource "null_resource" "wait_ingress_ready" {
+#   depends_on = [helm_release.ingress]
 #
 #   provisioner "local-exec" {
-#     command = "kubectl apply -f ${path.module}/helmconfig/nginx-ingress-setup.yml"
+#     command = <<-EOT
+#       set -euo pipefail
+#
+#       # 1) Controller up
+#       kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
+#         --for=condition=Available=True --timeout=5m
+#
+#       # 2) Admission jobs completed (names used by the official chart)
+#       kubectl -n ingress-nginx wait job/ingress-nginx-admission-create \
+#         --for=condition=complete --timeout=5m || true
+#       kubectl -n ingress-nginx wait job/ingress-nginx-admission-patch \
+#         --for=condition=complete --timeout=5m || true
+#
+#       # 3) Webhook object exists and has CABundle populated (best-effort check)
+#       kubectl get validatingwebhookconfiguration ingress-nginx-admission >/dev/null 2>&1 || true
+#     EOT
 #   }
-#
-#
 # }
+#
+resource "null_resource" "nginx_issuer" {
+  depends_on = [null_resource.kubeconfig, helm_release.cert-manager,null_resource.cert-manager-cluster-issuer,helm_release.external-dns,helm_release.ingress]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.module}/helmconfig/nginx-ingress-setup.yml"
+  }
+
+
+}
