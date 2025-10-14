@@ -14,4 +14,4 @@ variable "name" {}
 
 variable "access" {}
 
-variable "cluster_name" {}
+variable "addons" {}

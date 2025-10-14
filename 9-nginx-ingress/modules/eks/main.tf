@@ -12,6 +12,12 @@ provider "aws" {
   region = var.region
 }
 
+resource "aws_eks_addon" "addons" {
+  for_each = var.addons
+  cluster_name = aws_eks_cluster.this.name
+  addon_name   = each.key
+}
+
 # --- EKS Cluster IAM Role ---
 data "aws_iam_policy_document" "eks_assume" {
   statement {
@@ -52,9 +58,18 @@ resource "aws_iam_role" "external-dns" {
   })
 }
 
+
+
 resource "aws_iam_role_policy_attachment" "external-dns-route53-full-access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
   role       = aws_iam_role.external-dns.name
+}
+
+resource "aws_eks_pod_identity_association" "external-dns" {
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = "default"
+  service_account = "external-dns"
+  role_arn        = aws_iam_role.external-dns.arn
 }
 
 # --- EKS Cluster (EKS will create & wire SGs automatically) ---
@@ -469,19 +484,4 @@ resource "aws_route53_resolver_rule" "forward_eks" {
 resource "aws_route53_resolver_rule_association" "default_assoc" {
   resolver_rule_id = aws_route53_resolver_rule.forward_eks.id
   vpc_id           = data.aws_vpc.default.id
-}
-############################
-# IRSA (OIDC provider)
-############################
-# normally pods cant access aws services without credentials
-# with aws_iam_openid_connect_provider
-### kubernetes service accounts can assume iam roles directly
-### pods get temp aws credentials automatically
-### no need to hardcode keys in pods
-
-resource "aws_iam_openid_connect_provider" "oidc" {
-  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [] # AWS managed trust; omit unless your org mandates fixed thumbprints
-  depends_on      = [aws_eks_cluster.this]
 }
