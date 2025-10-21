@@ -1,0 +1,83 @@
+{{- if .Values.deployment.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ .Values.component_name }}
+#    namespace: {{ .Values.namespace }}
+    labels:
+        app: {{ .Values.component_name }}
+spec:
+
+    replicas: {{ .Values.replicas | default 1 }}
+    selector:
+        matchLabels:
+            app: {{ .Values.component_name }}
+    strategy:
+        type: RollingUpdate
+        rollingUpdate: { maxSurge: 1, maxUnavailable: 1 }
+    template:
+        metadata:
+            labels:
+                app: {{ .Values.component_name }}
+        spec:
+            serviceAccountName: {{ .Values.component_name }}
+            containers:
+                - name: {{ .Values.component_name }}
+                  image: {{ .Values.image | default (printf "crysis307/%s:latest" .Values.component_name) }}
+
+                  imagePullPolicy: Always
+                  ports:
+                      - containerPort: {{ .Values.appPort }}
+                  envFrom:
+                      - configMapRef:
+                            name: {{ .Values.component_name }}
+                  resources:
+                      requests:
+                          cpu: {{ .Values.resources.requests.cpu | default "50m" }}
+                          memory: {{ .Values.resources.requests.memory | default "64Mi" }}
+                      limits:
+                          cpu: {{ .Values.resources.limits.cpu | default "300m" }}
+                          memory: {{ .Values.resources.limits.memory | default "256Mi" }}
+
+                  {{- if eq (.Values.probeType | default "http") "tcp" }}
+                  {{- /* MongoDB */}}
+                  readinessProbe:
+                      tcpSocket: { port: {{ .Values.appPort }} }
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                  livenessProbe:
+                      tcpSocket: { port: {{ .Values.appPort }} }
+                      initialDelaySeconds: 15
+                      periodSeconds: 10
+                  {{- else }}
+                  {{- /* HTTP apps */}}
+                  readinessProbe:
+                      httpGet: { path: "/health", port: {{ .Values.appPort }} }
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet: { path: "/health", port: {{ .Values.appPort }} }
+                      initialDelaySeconds: 15
+                      periodSeconds: 10
+                  {{- end }}
+---
+
+{{- if eq (.Values.component_name) "user" }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: "redis"
+  #  namespace: {{ .Values.namespace }}
+  labels:
+    app: "redis"
+spec:
+  type: ClusterIP
+  selector:
+    app: "redis"
+  ports:
+    - port: 6379
+      targetPort: 6379
+  {{- end }}
+---
+{{- end }}

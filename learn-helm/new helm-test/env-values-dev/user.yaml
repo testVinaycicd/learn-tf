@@ -1,0 +1,36 @@
+component_name: "user"
+
+deployment:
+  enabled: true
+
+statefulset:
+  enabled: false
+
+
+replicas: 2
+
+configMapValues:
+  MONGO: true
+  REDIS_URL: "redis://redis-master:6379"
+  MONGO_URL: mongodb://admin:admin123@mongodb:27017/users?authSource=admin
+
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+
+# values.yaml (or your env file)
+appPort: 8080
+
+service:
+  type: ClusterIP      # for minikube you can keep this; or ClusterIP + ingress/port-forward
+  port: 8081              # client-facing
+  targetPort: 8081       # MUST match appPort for your nginx image
+
+resources:
+  requests: { cpu: "50m", memory: "64Mi" }
+  limits:   { cpu: "300m", memory: "256Mi" }
+

@@ -1,0 +1,15 @@
+{{- $svc := .Values.service | default (dict) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.component_name }}{{- if eq .Values.component_name "frontend" }}{{ end }}
+#  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.component_name }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ .Values.component_name }}
+  ports:
+    - port: {{ $svc.port    | default .Values.appPort }}
+      targetPort: {{ $svc.targetPort | default .Values.appPort }}

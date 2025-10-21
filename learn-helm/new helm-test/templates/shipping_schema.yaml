@@ -1,0 +1,21 @@
+{{- if .Values.schema.enabled}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: shipping-schema-job
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: runner
+          image: crysis307/{{ .Values.component_name }}-schema:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.component_name }}
+---
+  {{- end}}

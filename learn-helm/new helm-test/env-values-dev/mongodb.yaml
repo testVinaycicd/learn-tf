@@ -1,0 +1,39 @@
+component_name: "mongodb"
+
+
+statefulset:
+    enabled: true
+
+deployment:
+    enabled: false
+
+configMapValues:
+    MONGO_INITDB_ROOT_USERNAME: admin
+    MONGO_INITDB_ROOT_PASSWORD: admin123
+    MONGO_INITDB_DATABASE: catalogue
+
+service:
+    type: ClusterIP
+    port: 27017
+    targetPort: 27017
+
+headless_service:
+    name: mongodb-headless
+    port_name: mongo
+    port: 27017
+    targetPort: 27017
+    type: None
+
+hpa:
+    enabled: false
+
+
+resources:
+    requests: { cpu: "50m", memory: "64Mi" }
+    limits:   { cpu: "300m", memory: "256Mi" }
+
+replicas: 1
+appPort: 27017
+probeType: tcp
+namespace: "roboshop"
+

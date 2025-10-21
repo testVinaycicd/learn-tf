@@ -1,0 +1,99 @@
+{{- if .Values.statefulset.enabled }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-headless
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: 27017
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  # namespace: roboshop
+labels:
+  app: mongodb
+spec:
+  serviceName: mongodb-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        fsGroupChangePolicy: "OnRootMismatch"
+      containers:
+        - name: mongodb
+          image: {{ default (printf "crysis307/%s:%s" (.Values.component_name | default "mongodb") (.Values.imageTag | default "latest")) .Values.image | quote }}
+          imagePullPolicy: IfNotPresent
+          args: ["--auth", "--bind_ip_all"]
+          ports:
+            - name: mongo
+              containerPort: 27017
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.component_name }}
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          # --- Health checks ---
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | default "50m" }}
+              memory: {{ .Values.resources.requests.memory | default "64Mi" }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | default "300m" }}
+              memory: {{ .Values.resources.limits.memory | default "256Mi" }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.appPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.appPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          # --- Container hardening ---
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false   # Mongo needs to write; keep false
+            capabilities:
+              drop: ["ALL"]
+      # --- Storage (EBS on EKS via your storageClass) ---
+      terminationGracePeriodSeconds: 30
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        # storageClassName: gp2  # or gp3 / your class; omit to use default
+        resources:
+          requests:
+            storage: 3Gi
+
+---
+
+
+
+  {{- end }}

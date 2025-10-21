@@ -1,0 +1,48 @@
+component_name: "shipping"
+
+deployment:
+  enabled: true
+
+statefulset:
+  enabled: false
+
+
+
+schema:
+  enabled: true
+  jobs:
+    - master-data
+    - schema
+    - app-user
+  extention: sql
+
+
+replicas: 2
+
+configMapValues:
+  DB_PORT: "3306"
+  DB_HOST: "redis://redis-master:6379"
+  DB_NAME: "shipping"
+  DB_USER:  "-uroot"
+  DB_PASSWORD: "-pRoboShop@1"
+
+
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+
+# values.yaml (or your env file)
+appPort: 8083
+
+service:
+  type: ClusterIP      # for minikube you can keep this; or ClusterIP + ingress/port-forward
+  port: 8083              # client-facing
+  targetPort: 8083       # MUST match appPort for your nginx image
+
+resources:
+  requests: { cpu: "50m", memory: "64Mi" }
+  limits:   { cpu: "300m", memory: "256Mi" }

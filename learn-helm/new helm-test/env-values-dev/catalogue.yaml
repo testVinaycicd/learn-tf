@@ -1,0 +1,33 @@
+component_name: "catalogue"
+
+deployment:
+    enabled: true
+
+statefulset:
+    enabled: false
+
+replicas: 2
+
+configMapValues:
+    MONGO_URL: mongodb://admin:admin123@mongodb:27017/catalogue?authSource=admin
+    MONGO: "true"
+
+service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+
+resources:
+    requests: { cpu: "50m", memory: "64Mi" }
+    limits:   { cpu: "300m", memory: "256Mi" }
+
+appPort: 8080
+probeType: http
+
+namespace: "roboshop"
+
+hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
