@@ -1,6 +1,5 @@
 infra:
 	git pull
-	cd terraform
 	terraform init
 	terraform plan \
     -var "vpc_id=vpc-00dba36961960f2b1" -var "alb_subnet_ids=["subnet-092b98e6a5c96c8ff","subnet-071a6a6e6bfe92251"]" \
