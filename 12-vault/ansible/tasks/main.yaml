@@ -1,5 +1,5 @@
 - name: Set-prompt
-  ansible.builtin.shell: set-prompt {{tool_name}}
+  ansible.builtin.shell: sudo set-prompt {{tool_name}}
 
 - name: Import HashiCorp GPG key
   ansible.builtin.rpm_key:
@@ -7,8 +7,8 @@
     key: https://rpm.releases.hashicorp.com/gpg
   become: true
 
-# Use the RHEL 9 repo explicitly
-- name: Add HashiCorp repo (RHEL 9)
+# Pin to RHEL 9 (not $releasever) to avoid 404 on RHUI
+- name: Add HashiCorp repo for RHEL 9
   ansible.builtin.copy:
     dest: /etc/yum.repos.d/hashicorp.repo
     mode: "0644"
@@ -21,7 +21,7 @@
       gpgkey=https://rpm.releases.hashicorp.com/gpg
   become: true
 
-- name: Refresh metadata
+- name: Rebuild metadata cache
   ansible.builtin.command: dnf -y makecache
   changed_when: true
   become: true
@@ -33,23 +33,13 @@
     update_cache: true
   become: true
 
-- name: Ensure /etc/vault.d exists
-  ansible.builtin.file:
-    path: /etc/vault.d
-    state: directory
-    mode: "0755"
-  become: true
-
-- name: Place vault.hcl
-  ansible.builtin.copy:
-    src: vault.hcl     # or template: if you use Jinja vars
+- name: Updating vault repo file
+  ansible.builtin.template:
+    src: vault.hcl
     dest: /etc/vault.d/vault.hcl
-    mode: "0644"
-  become: true
 
-- name: Start & enable Vault
+- name: start vault
   ansible.builtin.systemd_service:
     name: vault
     state: started
-    enabled: true
-  become: true
+    enabled: yes
