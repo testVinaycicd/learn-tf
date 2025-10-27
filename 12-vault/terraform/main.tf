@@ -231,7 +231,7 @@ resource "null_resource" "frontend" {
 
     inline = [
       "sudo pip3.11 install ansible hvac",
-      "until nslookup ${var.name}-dev.mikeydevops1.online; do echo 'Waiting for DNS...'; sleep 5; done",
+      "until nslookup learn-vault.mikeydevops1.online; do echo 'Waiting for DNS...'; sleep 5; done",
       "ansible-pull -i localhost, -U https://github.com/testVinaycicd/learn-tf.git 12-vault/vault_setup.yml -e component_name=ansible -"
     ]
 
