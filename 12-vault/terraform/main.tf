@@ -132,7 +132,7 @@ resource "aws_lb" "vault" {
 resource "aws_lb_target_group" "vault" {
   name        = "${var.name}-tg"
   port        = 8200
-  protocol    = "HTTPS"
+  protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "instance"
   health_check {
@@ -141,7 +141,7 @@ resource "aws_lb_target_group" "vault" {
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    protocol            = "HTTPS"
+    protocol            = "HTTP"
     matcher             = "200-399"
     port                = "8200"
   }
