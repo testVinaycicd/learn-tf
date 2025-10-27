@@ -194,6 +194,10 @@ resource "aws_instance" "vault" {
   vpc_security_group_ids      = [aws_security_group.vault.id]
   iam_instance_profile        = aws_iam_instance_profile.vault.name
   associate_public_ip_address = false
+  tags = {
+    Name = "learning-vault"
+  }
+
 }
 
 
