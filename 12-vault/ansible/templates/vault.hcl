@@ -1,0 +1,25 @@
+
+ui = true
+cluster_name = "main"
+
+
+listener "tcp" {
+  address = "0.0.0.0:8200"
+
+}
+
+
+storage "raft" {
+  path    = "/opt/vault/data"
+  node_id = "vault-ec2-1"
+}
+
+
+
+
+
+
+log_level = "info"
+telemetry {
+  prometheus_retention_time = "24h"
+}

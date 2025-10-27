@@ -35,7 +35,7 @@
 
 - name: Updating vault repo file
   ansible.builtin.template:
-    src: vault.hcl.j2
+    src: vault.hcl
     dest: /etc/vault.d/vault.hcl
 
 - name: start vault
