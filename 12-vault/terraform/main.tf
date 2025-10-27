@@ -131,7 +131,7 @@ resource "aws_lb" "vault" {
 
 
 resource "aws_lb_target_group" "vault_http" {
-  name_prefix = "vault-"   # use prefix so Terraform can replace freely
+  name = "vault-http"   # use prefix so Terraform can replace freely
   port        = 8200
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
