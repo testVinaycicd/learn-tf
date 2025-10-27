@@ -17,15 +17,15 @@ resource "aws_security_group" "alb" {
   description = "ALB SG"
   vpc_id      = var.vpc_id
 
-
-
   ingress {
     description = "HTTPS from allowed CIDRs"
-    from_port   = 22
-    to_port     = 22
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+
 
   egress {
     from_port = 0
@@ -41,15 +41,16 @@ resource "aws_security_group" "vault" {
   description = "Vault EC2 SG"
   vpc_id      = var.vpc_id
 
-  # ALB → Vault 8200 (TLS)
+
   ingress {
     description = "HTTPS from allowed CIDRs"
-    from_port   = 443
-    to_port     = 443
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # ALB → Vault 8200 (TLS)
   ingress {
     description = "ALB to Vault 8200"
     from_port   = 8200
