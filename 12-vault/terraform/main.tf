@@ -129,26 +129,9 @@ resource "aws_lb" "vault" {
 }
 
 
-resource "aws_lb_target_group" "vault" {
-  name        = "${var.name}-tg"
-  port        = 8200
-  protocol    = "HTTP"
-  vpc_id      = var.vpc_id
-  target_type = "instance"
-  health_check {
-    path                = "/v1/sys/health"
-    interval            = 15
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    protocol            = "HTTP"
-    matcher             = "200-399"
-    port                = "8200"
-  }
-}
 
 resource "aws_lb_target_group" "vault_http" {
-  name_prefix = "va"   # use prefix so Terraform can replace freely
+  name_prefix = "vault-"   # use prefix so Terraform can replace freely
   port        = 8200
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -266,8 +249,8 @@ resource "null_resource" "frontend" {
 }
 
 
-resource "aws_lb_target_group_attachment" "vault" {
-  target_group_arn = aws_lb_target_group.vault.arn
+resource "aws_lb_target_group_attachment" "vault_http" {
+  target_group_arn = aws_lb_target_group.vault_http.arn
   target_id        = aws_instance.vault.id
   port             = 8200
 }
