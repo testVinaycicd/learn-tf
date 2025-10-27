@@ -147,6 +147,29 @@ resource "aws_lb_target_group" "vault" {
   }
 }
 
+resource "aws_lb_target_group" "vault_http" {
+  name_prefix = "${var.name}-tg-new"   # use prefix so Terraform can replace freely
+  port        = 8200
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "instance"
+
+  health_check {
+    path                = "/v1/sys/health"
+    protocol            = "HTTP"
+    matcher             = "200,429,472,473,501,503"
+    port                = "8200"
+    interval            = 15
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.vault.arn
@@ -156,7 +179,7 @@ resource "aws_lb_listener" "https" {
   certificate_arn   = var.acm_certificate_arn
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.vault.arn
+    target_group_arn = aws_lb_target_group.vault_http.arn
   }
 }
 
