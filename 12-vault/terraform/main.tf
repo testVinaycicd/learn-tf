@@ -40,8 +40,6 @@ resource "aws_security_group" "vault" {
   name        = "${var.name}-vault-sg"
   description = "Vault EC2 SG"
   vpc_id      = var.vpc_id
-
-
   ingress {
     description = "HTTPS from allowed CIDRs"
     from_port   = 22
@@ -131,7 +129,9 @@ resource "aws_lb" "vault" {
 
 
 resource "aws_lb_target_group" "vault_http" {
-  name = "vault-http"   # use prefix so Terraform can replace freely
+  # allow create_before_destroy by letting AWS pick a unique name
+  name_prefix = "vault-http-"
+
   port        = 8200
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -140,17 +140,19 @@ resource "aws_lb_target_group" "vault_http" {
   health_check {
     path                = "/v1/sys/health"
     protocol            = "HTTP"
-    matcher             = "200,429,472,473,501,503"
+    matcher             = "200,429,472,473"  # removed 501 and 503
     port                = "8200"
     interval            = 15
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
+
   lifecycle {
     create_before_destroy = true
   }
 }
+
 
 
 resource "aws_lb_listener" "https" {
