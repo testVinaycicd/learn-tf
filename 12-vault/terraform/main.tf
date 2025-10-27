@@ -233,7 +233,7 @@ resource "null_resource" "frontend" {
       "sudo pip3.11 install ansible hvac",
       "until nslookup learn-vault.mikeydevops1.online; do echo 'Waiting for DNS...'; sleep 5; done",
       "git clone https://github.com/testVinaycicd/learn-tf.git",
-      "cd ./learn-tf/12-vault/terraform",
+      "cd ./learn-tf/12-vault",
       "ls",
       # "ansible-pull -U https://github.com/testVinaycicd/learn-tf.git -C main -i localhost, 12-vault/vault_setup.yml -e component_name=ansible --check -vvv"
     ]
