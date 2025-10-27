@@ -225,7 +225,7 @@ resource "null_resource" "frontend" {
       type     = "ssh"
       user     = "ec2-user"
       password = "DevOps321"
-      host     = aws_instance.vault.private_ip
+      host     = aws_instance.vault.public_ip
     }
 
 
