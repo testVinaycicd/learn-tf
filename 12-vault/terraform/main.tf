@@ -171,7 +171,8 @@ resource "aws_route53_record" "vault" {
   type    = "A"
   alias {
     name    = aws_lb.vault.dns_name   # e.g. vault-alb-123456.elb.amazonaws.com
-    zone_id = aws_lb.vault.zone_id evaluate_target_health = true
+    zone_id = aws_lb.vault.zone_id
+    evaluate_target_health = true
   }
 }
 
