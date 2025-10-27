@@ -216,7 +216,7 @@ resource "null_resource" "frontend" {
   depends_on = [aws_route53_record.vault]
 
   triggers = {
-    instance_id_change = aws_instance.vault.id
+    always = timestamp()  # changes on every apply → always re-run
   }
 
   provisioner "remote-exec" {
