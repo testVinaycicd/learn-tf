@@ -35,7 +35,7 @@ variable "route53_zone_id" {
   type = string
 }
 variable "domain_name" {
-  default = "learn-vault.mikeydevops1.online.com"
+  default = "learn-vault.mikeydevops1.online"
 } # e.g., "vault.example.com"
 
 variable "acm_certificate_arn" {
