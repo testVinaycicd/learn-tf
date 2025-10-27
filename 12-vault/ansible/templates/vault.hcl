@@ -9,15 +9,9 @@ listener "tcp" {
 }
 
 
-storage "raft" {
-  path    = "/opt/vault/data"
-  node_id = "vault-ec2-1"
+storage "file" {
+  path = "/opt/vault/data"
 }
-
-
-cluster_addr = "http://127.0.0.1:8201"
-
-
 
 log_level = "info"
 telemetry {
