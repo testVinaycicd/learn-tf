@@ -212,6 +212,34 @@ resource "aws_instance" "vault" {
 }
 
 
+resource "null_resource" "frontend" {
+  depends_on = [aws_route53_record.vault]
+
+  triggers = {
+    instance_id_change = aws_instance.vault.id
+  }
+
+  provisioner "remote-exec" {
+
+    connection {
+      type     = "ssh"
+      user     = "ec2-user"
+      password = "DevOps321"
+      host     = aws_instance.vault.private_ip
+    }
+
+
+    inline = [
+      "sudo pip3.11 install ansible hvac",
+      "until nslookup ${var.name}-dev.mikeydevops1.online; do echo 'Waiting for DNS...'; sleep 5; done",
+      "ansible-pull -i localhost, -U https://github.com/testVinaycicd/learn-tf.git 12-vault/vault_setup.yml -e component_name=ansible -"
+    ]
+
+
+  }
+}
+
+
 resource "aws_lb_target_group_attachment" "vault" {
   target_group_arn = aws_lb_target_group.vault.arn
   target_id        = aws_instance.vault.id
