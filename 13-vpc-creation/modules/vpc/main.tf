@@ -91,49 +91,49 @@ resource "aws_security_group" "ec2_sg" {
 }
 
 
-resource "aws_subnet" "private" {
-  for_each = local.az_map
-  vpc_id = aws_vpc.this.id
-  cidr_block = cidrsubnet(var.cidr,8 ,each.value + 100 ) # separate /24 range, e.g., 10.0.100.0/24, 10.0.101.0/24
-  availability_zone = each.key
-  map_public_ip_on_launch = false
-  tags = { Name = "${var.name}-private-${each.key}" }
-}
-
-resource "aws_eip" "nat" {
-  for_each = aws_subnet.public
-  domain   = "vpc"
-  tags     = { Name = "${var.name}-nat-eip-${each.key}" }
-}
-
-
-# NAT belongs to public subnet (placement), but it serves private subnets (usage).
-resource "aws_nat_gateway" "this" {
-  for_each      = aws_subnet.public
-  allocation_id = aws_eip.nat[each.key].id
-  subnet_id     = aws_subnet.public[each.key].id # nat gateway should live in a public subnet for it to access internet
-  tags          = { Name = "${var.name}-nat-${each.key}" }
-
-  depends_on = [aws_internet_gateway.this]
-}
-
-
-resource "aws_route_table" "private" {
-  for_each = aws_subnet.private
-  vpc_id   = aws_vpc.this.id
-  tags     = { Name = "${var.name}-private-rt-${each.key}" }
-
-}
-
-resource "aws_route" "private_default_via_nat" {
-  for_each               = aws_route_table.private
-  route_table_id         = aws_route_table.private[each.key].id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.this[each.key].id
-}
-
-resource "aws_route_table_association" "private_assoc" {
-  for_each       = aws_subnet.private
-  subnet_id      = aws_subnet.private[each.key].id
-  route_table_id = aws_route_table.private[each.key].id
-}
+# resource "aws_subnet" "private" {
+#   for_each = local.az_map
+#   vpc_id = aws_vpc.this.id
+#   cidr_block = cidrsubnet(var.cidr,8 ,each.value + 100 ) # separate /24 range, e.g., 10.0.100.0/24, 10.0.101.0/24
+#   availability_zone = each.key
+#   map_public_ip_on_launch = false
+#   tags = { Name = "${var.name}-private-${each.key}" }
+# }
+#
+# resource "aws_eip" "nat" {
+#   for_each = aws_subnet.public
+#   domain   = "vpc"
+#   tags     = { Name = "${var.name}-nat-eip-${each.key}" }
+# }
+#
+#
+# # NAT belongs to public subnet (placement), but it serves private subnets (usage).
+# resource "aws_nat_gateway" "this" {
+#   for_each      = aws_subnet.public
+#   allocation_id = aws_eip.nat[each.key].id
+#   subnet_id     = aws_subnet.public[each.key].id # nat gateway should live in a public subnet for it to access internet
+#   tags          = { Name = "${var.name}-nat-${each.key}" }
+#
+#   depends_on = [aws_internet_gateway.this]
+# }
+#
+#
+# resource "aws_route_table" "private" {
+#   for_each = aws_subnet.private
+#   vpc_id   = aws_vpc.this.id
+#   tags     = { Name = "${var.name}-private-rt-${each.key}" }
+#
+# }
+#
+# resource "aws_route" "private_default_via_nat" {
+#   for_each               = aws_route_table.private
+#   route_table_id         = aws_route_table.private[each.key].id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = aws_nat_gateway.this[each.key].id
+# }
+#
+# resource "aws_route_table_association" "private_assoc" {
+#   for_each       = aws_subnet.private
+#   subnet_id      = aws_subnet.private[each.key].id
+#   route_table_id = aws_route_table.private[each.key].id
+# }
