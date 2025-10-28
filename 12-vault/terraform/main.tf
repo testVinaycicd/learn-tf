@@ -1,15 +1,4 @@
-# ---------- KMS for Vault auto-unseal ----------
 
-resource "aws_kms_key" "vault" {
-  description             = "KMS key for Vault auto-unseal"
-  deletion_window_in_days = var.kms_key_deletion_window_days
-  enable_key_rotation     = true
-}
-
-resource "aws_kms_alias" "vault" {
-  name          = "alias/${var.name}-vault"
-  target_key_id = aws_kms_key.vault.id
-}
 
 # ---------- Security Groups ----------
 resource "aws_security_group" "alb" {
@@ -73,57 +62,7 @@ resource "aws_security_group" "vault" {
   }
 }
 
-# ---------- IAM for EC2 (KMS + SSM) ----------
-resource "aws_iam_role" "vault" {
-  name               = "${var.name}-vault-ec2-role"
-  assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
-}
 
-
-data "aws_iam_policy_document" "ec2_trust" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-  }
-}
-
-resource "aws_iam_policy" "minimal_role" {
-  name = "${var.name}-minimal_roal"
-
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "ec2:*",
-          "elasticloadbalancing:*",
-          "iam:*",
-          "kms:*",
-          "route53:*",
-          "ssm:*",
-          "cloudwatch:*",
-          "logs:*"
-        ],
-        "Resource" : "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "minimal_role" {
-  role       = aws_iam_role.vault.name
-  policy_arn = aws_iam_policy.minimal_role.arn
-}
-
-
-resource "aws_iam_instance_profile" "vault" {
-  name = "${var.name}-vault-instance-profile"
-  role = aws_iam_role.vault.name
-}
 
 # ---------- ALB + Listener + Target Group ----------
 resource "aws_lb" "vault" {
@@ -147,16 +86,16 @@ resource "aws_lb_target_group" "vault_https" {
   # Optional: stick to HTTP/1 since Vault UI/HTTP API is classic
   protocol_version = "HTTP1"
 
-  # health_check {
-  #   path                = "/v1/sys/health?standbyok=true&perfstandbyok=true"
-  #   protocol            = "HTTPS"
-  #   matcher             = "200,429,472,473"
-  #   port                = "8200"
-  #   interval            = 15
-  #   timeout             = 5
-  #   healthy_threshold   = 2
-  #   unhealthy_threshold = 2
-  # }
+  health_check {
+    path                = "/v1/sys/health?standbyok=true&perfstandbyok=true"
+    protocol            = "HTTPS"
+    matcher             = "200,429,472,473"
+    port                = "8200"
+    interval            = 15
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
 
   lifecycle {
     create_before_destroy = true
