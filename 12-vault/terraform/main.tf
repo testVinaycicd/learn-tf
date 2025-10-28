@@ -38,7 +38,7 @@ resource "aws_security_group" "vault" {
   description = "Vault EC2 SG"
   vpc_id      = var.vpc_id
   ingress {
-    description = "HTTPS from allowed CIDRs"
+    description = "SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -77,9 +77,9 @@ resource "aws_lb" "vault" {
 
 
 resource "aws_lb_target_group" "vault_https" {
-  name        = "vault-alb-https"         # keep your existing name if you like
+  name        = "vault-alb-http"         # keep your existing name if you like
   port        = 8200
-  protocol    = "HTTPS"
+  protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "instance"
 
@@ -88,7 +88,7 @@ resource "aws_lb_target_group" "vault_https" {
 
   health_check {
     path                = "/v1/sys/health?standbyok=true&perfstandbyok=true"
-    protocol            = "HTTPS"
+    protocol            = "HTTP"
     matcher             = "200,429,472,473"
     port                = "8200"
     interval            = 15
