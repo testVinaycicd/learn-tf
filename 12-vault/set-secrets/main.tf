@@ -2,7 +2,7 @@ terraform {
     backend "s3" {
         bucket = "learning-bucket-307"    # existing bucket
         key    = "terraform-module/infra-setup/vault.tfstate"
-        region = "us-east-1"
+        region = "us-east-2"
     }
     required_providers {
         vault = {
