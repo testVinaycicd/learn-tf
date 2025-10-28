@@ -18,6 +18,14 @@ resource "aws_security_group" "alb" {
   vpc_id      = var.vpc_id
 
   ingress {
+    description = "HTTP for redirect"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "HTTPS from allowed CIDRs"
     from_port   = 443
     to_port     = 443
@@ -128,19 +136,21 @@ resource "aws_lb" "vault" {
 
 
 
-resource "aws_lb_target_group" "vault_http" {
-  # allow create_before_destroy by letting AWS pick a unique name
-  name = "vault-alb"
 
+resource "aws_lb_target_group" "vault_https" {
+  name        = "vault-alb-https"         # keep your existing name if you like
   port        = 8200
-  protocol    = "HTTP"
+  protocol    = "HTTPS"
   vpc_id      = var.vpc_id
   target_type = "instance"
 
+  # Optional: stick to HTTP/1 since Vault UI/HTTP API is classic
+  protocol_version = "HTTP1"
+
   # health_check {
-  #   path                = "/v1/sys/health"
-  #   protocol            = "HTTP"
-  #   matcher             = "200,429,472,473"  # removed 501 and 503
+  #   path                = "/v1/sys/health?standbyok=true&perfstandbyok=true"
+  #   protocol            = "HTTPS"
+  #   matcher             = "200,429,472,473"
   #   port                = "8200"
   #   interval            = 15
   #   timeout             = 5
@@ -154,7 +164,6 @@ resource "aws_lb_target_group" "vault_http" {
 }
 
 
-
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.vault.arn
   port              = 443
@@ -163,7 +172,7 @@ resource "aws_lb_listener" "https" {
   certificate_arn   = var.acm_certificate_arn
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.vault_http.arn
+    target_group_arn = aws_lb_target_group.vault_https.arn
   }
 }
 
@@ -251,54 +260,7 @@ resource "null_resource" "frontend" {
 
 
 resource "aws_lb_target_group_attachment" "vault_http" {
-  target_group_arn = aws_lb_target_group.vault_http.arn
+  target_group_arn = aws_lb_target_group.vault_https.arn
   target_id        = aws_instance.vault.id
   port             = 8200
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
