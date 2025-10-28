@@ -137,16 +137,16 @@ resource "aws_lb_target_group" "vault_http" {
   vpc_id      = var.vpc_id
   target_type = "instance"
 
-  health_check {
-    path                = "/v1/sys/health"
-    protocol            = "HTTP"
-    matcher             = "200,429,472,473"  # removed 501 and 503
-    port                = "8200"
-    interval            = 15
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-  }
+  # health_check {
+  #   path                = "/v1/sys/health"
+  #   protocol            = "HTTP"
+  #   matcher             = "200,429,472,473"  # removed 501 and 503
+  #   port                = "8200"
+  #   interval            = 15
+  #   timeout             = 5
+  #   healthy_threshold   = 2
+  #   unhealthy_threshold = 2
+  # }
 
   lifecycle {
     create_before_destroy = true
