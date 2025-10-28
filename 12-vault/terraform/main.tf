@@ -130,7 +130,7 @@ resource "aws_lb" "vault" {
 
 resource "aws_lb_target_group" "vault_http" {
   # allow create_before_destroy by letting AWS pick a unique name
-  name_prefix = "vault-http-"
+  name = "vault-alb"
 
   port        = 8200
   protocol    = "HTTP"
