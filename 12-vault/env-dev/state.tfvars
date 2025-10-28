@@ -6,4 +6,4 @@ ec2_subnet_id="subnet-05a1e29e18e78571c"
 
 route53_zone_id="Z09180393TY9K7UQDKE5E"
 
-acm_certificate_arn="arn:aws:acm:us-east-1:886436958775:certificate/ade6b3da-bc34-435d-912c-3a159bd7da9f"
+acm_certificate_arn="arn:aws:acm:us-east-1:886436958775:certificate/7dc0d26a-3597-4624-a96e-6f1bb3f80db5"
