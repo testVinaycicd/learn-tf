@@ -1,8 +1,8 @@
-vpc_id="vpc-00dba36961960f2b1"
+vpc_id="vpc-09c811004fa1a9871"
 
-alb_subnet_ids=["subnet-092b98e6a5c96c8ff","subnet-071a6a6e6bfe92251"]
+alb_subnet_ids=["subnet-05a1e29e18e78571c","subnet-00b2a876c57e58833"]
 
-ec2_subnet_id="subnet-092b98e6a5c96c8ff"
+ec2_subnet_id="subnet-05a1e29e18e78571c"
 
 route53_zone_id="Z09180393TY9K7UQDKE5E"
 
