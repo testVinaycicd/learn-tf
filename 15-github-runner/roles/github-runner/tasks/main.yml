@@ -196,36 +196,14 @@
   register: runner_config
 
 
-#- name: Configure GitHub runner (as root so dependencies work)
-#  ansible.builtin.shell: ./config.sh --url https://github.com/testVinaycicd --token "{{ lookup('community.hashi_vault.hashi_vault', 'secret=infra/data/ssh:RUNNER_TOKEN token={{ vault_token }} url=https://learn-vault.mikeydevops1.online') }}" --unattended
-#  args:
-#    chdir: /actions-runner
-#  become: true
-#  become_user: github  # Commented out so dependencies install properly
-#  when: not runner_config.stat.exists
-
-- name: Get runner token from Vault (KV v2)
-  community.hashi_vault.vault_kv2_get:
-    url: "https://learn-vault.mikeydevops1.online"   # or http(s)://host:port if different
-    token: "{{ vault_token }}"
-    path: "kv/ssh"                                    # mount/secret (KV v2, no /data here)
-    validate_certs: true                              # set to false only if self-signed
-  register: vault_ssh
-  delegate_to: localhost
-  run_once: true
-  vars:
-    ansible_python_interpreter: "{{ ansible_playbook_python }}"
-  no_log: true
-
-- name: Configure GitHub runner
-  ansible.builtin.shell: >
-    ./config.sh --url https://github.com/testVinaycicd
-    --token "{{ vault_ssh.data.data.RUNNER_TOKEN }}" --unattended
+- name: Configure GitHub runner (as root so dependencies work)
+  ansible.builtin.shell: ./config.sh --url https://github.com/testVinaycicd --token "{{ lookup('community.hashi_vault.hashi_vault', 'secret=kv/ssh:RUNNER_TOKEN token={{ vault_token }} url=https://learn-vault.mikeydevops1.online') }}" --unattended
   args:
     chdir: /actions-runner
   become: true
-  become_user: github
+  become_user: github  # Commented out so dependencies install properly
   when: not runner_config.stat.exists
+
 
 
 - name: Check if runner service marker exists
