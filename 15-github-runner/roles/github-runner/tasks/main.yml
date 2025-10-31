@@ -206,11 +206,16 @@
 
 - name: Get runner token from Vault (KV v2)
   community.hashi_vault.vault_kv2_get:
-    url: "https://learn-vault.mikeydevops1.online"
+    url: "https://learn-vault.mikeydevops1.online"   # or http(s)://host:port if different
     token: "{{ vault_token }}"
-    path: "kv/ssh"            # mount/secret    <-- NOTE: no /data here
-    validate_certs: true      # set false only if self-signed
+    path: "kv/ssh"                                    # mount/secret (KV v2, no /data here)
+    validate_certs: true                              # set to false only if self-signed
   register: vault_ssh
+  delegate_to: localhost
+  run_once: true
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  no_log: true
 
 - name: Configure GitHub runner
   ansible.builtin.shell: >
