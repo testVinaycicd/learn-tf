@@ -1,0 +1,5 @@
+- name: GitHub runner setup
+  hosts: all
+  become: true
+  roles:
+    - "{{ tool_name }}"

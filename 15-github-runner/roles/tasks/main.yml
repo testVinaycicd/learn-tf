@@ -1,0 +1,272 @@
+#- name: Setup prompt
+#  ansible.builtin.shell: set-prompt {{ tool_name }}
+#
+#- name: LVM Layout
+#  ansible.builtin.include_role:
+#    name: common
+#    tasks_from: lvm
+#
+#- name: Create github local user
+#  ansible.builtin.user:
+#    name: github
+#
+#- name: Check already runner configured status
+#  ansible.builtin.stat:
+#    path: /actions-runner/.runner
+#  register: runner_stat
+#
+#- name: Create GitHub Actions folder
+#  ansible.builtin.file:
+#    path: /actions-runner
+#    state: directory
+#    owner: github
+#    group: github
+#
+#- name: Install libicu dependency package
+#  ansible.builtin.dnf:
+#    name: libicu
+#    state: installed
+#
+#- name: github action setup
+#  when: not runner_stat.stat.exists
+#  block:
+#    - name: Download GitHub runner
+#      ansible.builtin.unarchive:
+#        src: https://github.com/actions/runner/releases/download/v2.325.0/actions-runner-linux-x64-2.325.0.tar.gz
+#        dest: /actions-runner
+#        owner: github
+#        group: github
+#        remote_src: yes
+#
+#
+#
+#    - name: Configure GitHub runner (as root so dependencies work)
+#      ansible.builtin.shell: ./config.sh --url https://github.com/testVinaycicd --token "{{ lookup('community.hashi_vault.hashi_vault', 'secret=infra/data/ssh:RUNNER_TOKEN token={{ vault_token }} url=http://vault.mikeydevops1.online:8200/') }}" --unattended
+#      args:
+#        chdir: /actions-runner
+#      become_user: github  # Commented out so dependencies install properly
+#
+#    - name: copy service file
+#      ansible.builtin.template:
+#        src: github-runner.service
+#        dest: /etc/systemd/system/github-runner.service
+#
+#    - name: Start github runner service
+#      ansible.builtin.systemd_service:
+#        name: github-runner
+#        state: started
+#        enabled: yes
+#        daemon-reload: yes
+#
+#
+#- name: Copy Hashicorp repo file
+#  ansible.builtin.template:
+#    src: hashicorp.repo
+#    dest: /etc/yum.repos.d/hashicorp.repo
+#
+#- name: Install Terraform
+#  ansible.builtin.dnf:
+#    name: terraform
+#    state: installed
+#
+#- name: Copy kubernetes repo file
+#  ansible.builtin.template:
+#    src: kubernetes.repo
+#    dest: /etc/yum.repos.d/kubernetes.repo
+#
+#- name: Install kubectl
+#  ansible.builtin.dnf:
+#    name: kubectl
+#    state: installed
+#
+#- name: Install Helm
+#  ansible.builtin.shell: |
+#    curl -L -O https://get.helm.sh/helm-v3.17.2-linux-amd64.tar.gz
+#    tar -xf helm-v3.17.2-linux-amd64.tar.gz
+#    mv linux-amd64/helm /bin/helm
+#  args:
+#    chdir: /tmp
+#
+#- name: Get docker repo
+#  ansible.builtin.get_url:
+#    url: https://download.docker.com/linux/rhel/docker-ce.repo
+#    dest: /etc/yum.repos.d/docker.repo
+#
+#- name: Install Docker
+#  ansible.builtin.dnf:
+#    name: docker-ce
+#    state: installed
+#
+#- name: Start Docker
+#  ansible.builtin.systemd_service:
+#    name: docker
+#    state: started
+#    enabled: yes
+#
+#- name: Add github user to docker group
+#  ansible.builtin.user:
+#    name: github
+#    groups: docker
+#
+#- name: enable nodejs dnf module
+#  ansible.builtin.shell: dnf module disable nodejs -y ;dnf module enable nodejs:20 -y
+#
+#- name: Install NodeJS
+#  ansible.builtin.dnf:
+#    name: nodejs
+#    state: installed
+#
+#- name: Install Maven
+#  ansible.builtin.dnf:
+#    name: maven
+#    state: installed
+#
+#- name: Install Argocd
+#  ansible.builtin.shell: |
+#    curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+#    sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+#    rm argocd-linux-amd64
+#
+##- name: Install Trivy
+##  ansible.builtin.shell: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /bin v0.62.1
+
+
+- name: Setup prompt
+  ansible.builtin.shell: set-prompt {{ tool_name }}
+
+- name: LVM Layout
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: lvm
+
+- name: Create github local user
+  ansible.builtin.user:
+    name: github
+
+- name: Create GitHub Actions folder
+  ansible.builtin.file:
+    path: /actions-runner
+    state: directory
+    owner: github
+    group: github
+
+- name: Install minimal deps on non-Debian9
+  ansible.builtin.package:
+    name:
+      - curl
+      - tar
+      - libicu*   # covers libicu on RHEL/Amazon/Ubuntu (pattern is OK for apt/yum/dnf)
+    state: present
+    update_cache: true
+  become: true
+#  when: not (ansible_facts.distribution == "Debian" and ansible_facts.distribution_major_version == "9")
+
+- name: Detect runner arch
+  ansible.builtin.set_fact:
+    runner_arch: >-
+      {{ 'x64' if ansible_architecture in ['x86_64','amd64'] else
+         'arm64' if ansible_architecture in ['aarch64','arm64'] else 'x64' }}
+
+- name: Get latest runner release
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/actions/runner/releases/latest
+    return_content: true
+    headers:
+      Accept: application/vnd.github+json
+      User-Agent: ansible
+  register: runner_release
+
+- name: Set runner version
+  ansible.builtin.set_fact:
+    runner_version: "{{ (runner_release.json.tag_name | regex_replace('^v','')) }}"
+
+- name: Download GitHub runner
+  ansible.builtin.unarchive:
+    src: "https://github.com/actions/runner/releases/download/v{{ runner_version }}/actions-runner-linux-{{ runner_arch }}-{{ runner_version }}.tar.gz"
+    dest: /actions-runner
+    owner: github
+    group: github
+    remote_src: yes
+  become: true
+
+
+- name: Check if runner is already configured
+  ansible.builtin.stat:
+    path: /actions-runner/.runner
+  register: runner_config
+
+
+- name: Configure GitHub runner (as root so dependencies work)
+  ansible.builtin.shell: ./config.sh --url https://github.com/testVinaycicd --token "{{ lookup('community.hashi_vault.hashi_vault', 'secret=infra/data/ssh:RUNNER_TOKEN token={{ vault_token }} url=http://vault.mikeydevops1.online:8200/') }}" --unattended
+  args:
+    chdir: /actions-runner
+  become: true
+  become_user: github  # Commented out so dependencies install properly
+  when: not runner_config.stat.exists
+
+- name: Check if runner service marker exists
+  ansible.builtin.stat:
+    path: /actions-runner/.service
+  register: runner_service_marker
+
+- name: Install service (as github)
+  ansible.builtin.command: ./svc.sh install github
+  args:
+    chdir: /actions-runner
+  become: true
+  register: svc_install
+  changed_when: "'Service already exists' not in (svc_install.stdout | default(''))"
+  when: not runner_service_marker.stat.exists
+
+
+- name: Start service
+  ansible.builtin.command: ./svc.sh start
+  args:
+    chdir: /actions-runner
+  become: true
+
+# (Nice to have) tighten perms
+- name: Tighten runner dir permissions
+  ansible.builtin.file:
+    path: /actions-runner
+    owner: github
+    group: github
+    mode: "0750"
+    recurse: true
+  become: true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

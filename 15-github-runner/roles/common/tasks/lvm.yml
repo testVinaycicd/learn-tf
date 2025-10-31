@@ -1,0 +1,8 @@
+- name: Increase Disk Parition
+  ansible.builtin.shell: growpart /dev/{{disk_name}} 6
+  ignore_errors: yes
+
+- name: Increase LVM
+  ansible.builtin.shell: lvextend -r -L {{item.size}}G /dev/mapper/RootVG-{{item.lv}}
+  loop: "{{ lv_input }}"
+  ignore_errors: yes
