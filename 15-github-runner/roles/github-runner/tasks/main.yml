@@ -197,7 +197,7 @@
 
 
 - name: Configure GitHub runner (as root so dependencies work)
-  ansible.builtin.shell: ./config.sh --url https://github.com/testVinaycicd --token "{{ lookup('community.hashi_vault.hashi_vault', 'secret=infra/data/ssh:RUNNER_TOKEN token={{ vault_token }} url=http://learn-github-runner-internal.mikeydevops1.online:8200/') }}" --unattended
+  ansible.builtin.shell: ./config.sh --url https://github.com/testVinaycicd --token "{{ lookup('community.hashi_vault.hashi_vault', 'secret=infra/data/ssh:RUNNER_TOKEN token={{ vault_token }} url=https://learn-vault.mikeydevops1.online') }}" --unattended
   args:
     chdir: /actions-runner
   become: true
