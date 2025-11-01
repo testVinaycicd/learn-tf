@@ -1,18 +1,25 @@
 component_name: "frontend"
 
+deployment:
+    enabled: true
+
+statefulset:
+    enabled: false
+
+
 replicas: 2
 
 configMapValues:
     CATALOGUE_HOST: catalogue
     CATALOGUE_PORT: "8080"
-    USER_HOST: user-service
-    USER_PORT: "8082"
-    CART_HOST: cart-service
-    CART_PORT: "8083"
-    SHIPPING_HOST: shipping-service
-    SHIPPING_PORT: "8084"
-    PAYMENT_HOST: payment-service
-    PAYMENT_PORT: "8085"
+    USER_HOST: user
+    USER_PORT: "8080"
+    CART_HOST: cart
+    CART_PORT: "8080"
+    SHIPPING_HOST: shipping
+    SHIPPING_PORT: "8080"
+    PAYMENT_HOST: payment
+    PAYMENT_PORT: "8080"
 
 
 
@@ -20,7 +27,7 @@ configMapValues:
 appPort: 8080
 
 service:
-    type: ClusterIP      # for minikube you can keep this; or ClusterIP + ingress/port-forward
+    type: LoadBalancer      # for minikube you can keep this; or ClusterIP + ingress/port-forward
     port: 8080              # client-facing
     targetPort: 8080        # MUST match appPort for your nginx image
 
@@ -31,3 +38,9 @@ resources:
 # choose probe type per app (optional switch)
 probeType: http           # "http" for frontend/catalogue, "tcp" for mongodb
 namespace: "roboshop"
+
+hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70

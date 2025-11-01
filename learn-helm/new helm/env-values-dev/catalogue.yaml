@@ -1,5 +1,11 @@
 component_name: "catalogue"
 
+deployment:
+    enabled: true
+
+statefulset:
+    enabled: false
+
 replicas: 2
 
 configMapValues:
@@ -19,3 +25,9 @@ appPort: 8080
 probeType: http
 
 namespace: "roboshop"
+
+hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
