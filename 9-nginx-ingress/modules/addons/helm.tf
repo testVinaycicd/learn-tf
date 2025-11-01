@@ -171,6 +171,6 @@ resource "helm_release" "argocd" {
   }
 
   values = [
-    file("${path.module}/helm-config/argocd.yml")
+    file("${path.module}/helmconfig/argocd.yml")
   ]
 }
