@@ -22,7 +22,7 @@ spec:
             containers:
                 - name: {{ .Values.component_name }}
                   image: {{ .Values.image | default (printf "crysis307/%s:latest" .Values.component_name) }}
-                  imagePullPolicy: IfNotPresent
+                  imagePullPolicy: Always
                   ports:
                       - containerPort: {{ .Values.appPort }}
                   envFrom:
