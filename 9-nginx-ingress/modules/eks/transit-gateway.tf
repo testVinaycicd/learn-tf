@@ -94,11 +94,15 @@ locals {
   )
 }
 
+data "aws_vpc" "eks" {
+  id = var.vpc_id
+}
+
 # Ensure EVERY default-VPC route table can reach the EKS CIDR via TGW
 resource "aws_route" "default_to_eks_all" {
   for_each               = local.default_vpc_route_table_ids
   route_table_id         = each.value
-  destination_cidr_block = var.vpc_id                # EKS VPC CIDR
+  destination_cidr_block = data.aws_vpc.eks.cidr_block                # EKS VPC CIDR
   transit_gateway_id     = aws_ec2_transit_gateway.main.id
 }
 
