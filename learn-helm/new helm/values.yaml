@@ -1,0 +1,22 @@
+service:
+  type: ClusterIP
+
+namespace: "roboshop"
+
+deployment:
+  enabled: false
+
+statefulset:
+  enabled: false
+
+
+redis:
+  enabled: false
+
+mysql:
+  enabled: false
+
+schema:
+  enabled: false
+
+
