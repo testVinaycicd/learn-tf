@@ -94,9 +94,7 @@ locals {
   )
 }
 
-data "aws_vpc" "eks" {
-  id = var.vpc_id
-}
+
 
 # Ensure EVERY default-VPC route table can reach the EKS CIDR via TGW
 resource "aws_route" "default_to_eks_all" {
