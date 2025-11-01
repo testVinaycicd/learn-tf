@@ -165,10 +165,10 @@ resource "helm_release" "argocd" {
   create_namespace = true
   wait             = false
 
-  set {
+  set = [{
     name  = "global.domain"
-    value = "argocd-dev..mikeydevops1.online"
-  }
+    value = "argocd-dev.mikeydevops1.online"
+  }]
 
   values = [
     file("${path.module}/helmconfig/argocd.yml")
