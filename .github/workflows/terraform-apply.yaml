@@ -4,7 +4,7 @@ on: workflow_dispatch
 jobs:
   Terraform-Apply:
 #    runs_on: self-hosted
-    run-on: ubuntu
+    runs-on: ubuntu
     defaults:
       run:
         working-directory: 9-nginx-ingress
