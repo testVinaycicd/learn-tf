@@ -1,0 +1,19 @@
+name: Terraform Apply
+on: workflow_dispatch
+
+jobs:
+  Terraform-Apply:
+#    runs_on: self-hosted
+    run_on: ubuntu
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+#      - name: Terraform apply
+#        run:  |
+#          terraform init -backend-config=env-dev.tfvars
+#          terraform plan -var-file=env-dev.tfvars
+#          terraform apply -var-file=env-dev.tfvars -auto-approve
+      - name: check frontend lasted sha
+        run: |
+          curl -s https://api.github.com/repos/testVinaycicd/practice-frontend/commits/main | jq -r '.sha'
