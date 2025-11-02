@@ -2,21 +2,28 @@ name: Terraform Apply
 on: workflow_dispatch
 
 jobs:
-  Terraform-Apply:
-#    runs_on: self-hosted
-    runs-on: ubuntu
+  terraform-apply:
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: 9-nginx-ingress
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Get latest frontend SHA
+        id: frontend_sha
+        run: |
+          SHA=$(curl -s https://api.github.com/repos/testVinaycicd/practice-frontend/commits/main | jq -r '.sha')
+          echo "Latest frontend SHA: $SHA"
+#          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
 
 #      - name: Terraform apply
 #        run:  |
 #          terraform init -backend-config=env-dev.tfvars
 #          terraform plan -var-file=env-dev.tfvars
 #          terraform apply -var-file=env-dev.tfvars -auto-approve
-      - name: check frontend lasted sha
-        run: |
-          curl -s https://api.github.com/repos/testVinaycicd/practice-frontend/commits/main | jq -r '.sha'
+#      - name: check frontend lasted sha
+#        run: |
+#          curl -s https://api.github.com/repos/testVinaycicd/practice-frontend/commits/main | jq -r '.sha'
