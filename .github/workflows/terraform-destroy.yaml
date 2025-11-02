@@ -1,0 +1,12 @@
+name: Terraform Destroy
+on: workflow_dispatch
+jobs:
+  Terraform_Destroy:
+    runs-on: self-hosted
+    steps:
+      - name: checkout repo code
+        uses: actions/checkout@v4
+      - name: Destroy Action
+        run: |
+          terraform init -backend-config=env-dev/s3-dev.tfvars
+          terraform destroy -var-file=env-dev/state.tfvars -auto-approve

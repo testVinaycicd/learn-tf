@@ -4,7 +4,10 @@ on: workflow_dispatch
 jobs:
   Terraform-Apply:
 #    runs_on: self-hosted
-    run_on: ubuntu
+    run-on: ubuntu
+    defaults:
+      run:
+        working-directory: 9-nginx-ingress
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
