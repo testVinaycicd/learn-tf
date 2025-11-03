@@ -190,7 +190,8 @@ resource "null_resource" "frontend" {
       "git clone https://github.com/testVinaycicd/learn-tf.git",
       "cd ./learn-tf/12-vault",
       "ls",
-      "ansible-pull -U https://github.com/testVinaycicd/learn-tf.git -C main -i localhost, 12-vault/vault_setup.yaml -e component_name=ansible -e tool_name=ansible"
+      # "ansible-pull -U https://github.com/testVinaycicd/learn-tf.git -C main -i localhost,-l localhost 12-vault/vault_setup.yaml -e component_name=ansible -e tool_name=ansible ansible_connection=local ansible_python_interpreter=/usr/bin/python3"
+      "/usr/local/bin/ansible-pull -U https://github.com/testVinaycicd/learn-tf.git -C main -i 'localhost,' -l localhost 12-vault/vault_setup.yaml -e 'component_name=ansible tool_name=ansible ansible_connection=local ansible_python_interpreter=/usr/bin/python3' "
     ]
 
 
