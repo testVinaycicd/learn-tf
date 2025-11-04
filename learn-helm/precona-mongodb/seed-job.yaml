@@ -13,13 +13,13 @@ spec:
           args:
             - |
               set -euo pipefail
-              mongosh "$MONGO_URI" --file /seed/init.js
+              mongosh "$MONGO_URL" --file /seed/init.js
           env:
-            - name: MONGO_URI
+            - name: MONGO_URL
               valueFrom:
                 secretKeyRef:
-                  name: psmdb-users  # create from Vault/ESO or regular Secret
-                  key: MONGODB_URI
+                  name: catalogue-mongo-url
+                  key: MONGO_URL
           # mount /seed if your image expects external files
 
 ---
