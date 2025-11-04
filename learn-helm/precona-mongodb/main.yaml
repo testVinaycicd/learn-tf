@@ -37,14 +37,8 @@ spec:
       expose:
         enabled: false # ClusterIP only
 
-  users:
-    - name: admin                                  # <-- username from Vault
-      passwordSecretRef:
-        name: psmdb-users
-        key: MONGO_INITDB_ROOT_PASSWORD
-      roles:
-        - db: admin
-          role: root
+  secrets:
+    users: psmdb-users-v115
 
 
 ## Enable percona backup manager (PBM)
