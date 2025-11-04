@@ -185,9 +185,9 @@ resource "helm_release" "psmdb_operator" {
   version    = "1.15.0" # keep pinned; upgrade intentionally
 
   # If you had a values.yaml in kustomize, put the same content here:
-  values = [
-    file("${path.module}/values-operator.yaml")
-  ]
+  # values = [
+  #   file("${path.module}/values-operator.yaml")
+  # ]
 
   # Safety: wait for resources/CRDs to settle before continuing
   wait          = true
