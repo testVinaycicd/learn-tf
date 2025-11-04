@@ -175,8 +175,30 @@ resource "helm_release" "argocd" {
   ]
 }
 
+resource "helm_release" "external_secrets_operator" {
+  name       = "external-secrets"
+  repository = "https://charts.external-secrets.io"
+  chart      = "external-secrets"
+  version    = "0.9.17" # or check latest below
+
+  # optional: values.yaml-style customization
+  values = [
+    yamlencode({
+      installCRDs = true
+      serviceAccount = {
+        create = true
+      }
+      webhook = {
+        certManager = {
+          enabled = false
+        }
+      }
+    })
+  ]
+}
+
 resource "helm_release" "psmdb_operator" {
-  depends_on = [helm_release.argocd]
+  depends_on = [helm_release.external_secrets_operator]
 
   name       = "psmdb-operator"
   namespace  = "default"
