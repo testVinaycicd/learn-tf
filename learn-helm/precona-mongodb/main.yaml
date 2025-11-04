@@ -4,24 +4,13 @@ apiVersion: psmdb.percona.com/v1
 kind: PerconaServerMongoDB
 metadata:
   name: mongodb
+  namespace: default
 spec:
   crVersion: 1.15.0
   image: percona/percona-server-mongodb:6.0.15-18
   allowUnsafeConfigurations: false
   updateStrategy: RollingUpdate
 
-
-
-#  target:
-#    name: psmdb-users
-#    template:
-#      data:
-#        MONGO_INITDB_ROOT_USERNAME: "{{ .MONGO_INITDB_ROOT_USERNAME }}"
-#        MONGO_INITDB_ROOT_PASSWORD: "{{ .MONGO_INITDB_ROOT_PASSWORD }}"
-##        MONGO_URI: "mongodb://{{ .MONGODB_USER_ADMIN_USER }}:{{ .MONGODB_USER_ADMIN_PASSWORD }}@{{ .HOST }}/?replicaSet={{ .RS }}"
-#  dataFrom:
-#    - extract:
-#        key: kv/psmdb
 
 
 
@@ -47,8 +36,15 @@ spec:
           memory: "2Gi"
       expose:
         enabled: false # ClusterIP only
-      nonvoting:
-        enabled: false
+
+  users:
+    - name: admin                                  # <-- username from Vault
+      passwordSecretRef:
+        name: psmdb-users
+        key: MONGO_INITDB_ROOT_PASSWORD
+      roles:
+        - db: admin
+          role: root
 
 
 ## Enable percona backup manager (PBM)
