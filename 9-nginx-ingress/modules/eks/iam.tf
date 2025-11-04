@@ -86,7 +86,10 @@ data "aws_iam_policy" "ebs_csi" {
 data "aws_iam_policy_document" "pod_identity_trust" {
   statement {
     effect    = "Allow"
-    principals { type = "Service", identifiers = ["pods.eks.amazonaws.com"] }
+    principals {
+      type = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
     actions   = ["sts:AssumeRole"]
   }
 }
