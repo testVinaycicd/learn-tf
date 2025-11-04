@@ -167,10 +167,30 @@ resource "helm_release" "argocd" {
 
   set = [{
     name  = "global.domain"
-    value = "argocd-dev.mikeydevops1.online"
+    value = "learn-argocd-dev.mikeydevops1.online"
   }]
 
   values = [
     file("${path.module}/helmconfig/argocd.yml")
   ]
+}
+
+resource "helm_release" "psmdb_operator" {
+  depends_on = [helm_release.argocd]
+
+  name       = "psmdb-operator"
+  namespace  = "default"
+  repository = "https://percona.github.io/percona-helm-charts/"
+  chart      = "psmdb-operator"
+  version    = "1.15.0" # keep pinned; upgrade intentionally
+
+  # If you had a values.yaml in kustomize, put the same content here:
+  values = [
+    file("${path.module}/values-operator.yaml")
+  ]
+
+  # Safety: wait for resources/CRDs to settle before continuing
+  wait          = true
+  timeout       = 600
+  recreate_pods = false
 }
