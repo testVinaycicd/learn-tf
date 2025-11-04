@@ -12,7 +12,7 @@ argocd app create psmdb-operator \
 --dest-server https://kubernetes.default.svc \
 --dest-namespace default \
 --sync-policy automated --self-heal --auto-prune --revision main \
---kustomize-image "crysis307/mongodb=crysis307/mongodb:${image_tag}"
+
 
 
 # Cluster
