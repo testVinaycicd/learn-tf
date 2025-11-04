@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: psmdb-rs0
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: mongodb
+      app.kubernetes.io/part-of: percona-server-mongodb
+      app.kubernetes.io/component: mongod
+
+---

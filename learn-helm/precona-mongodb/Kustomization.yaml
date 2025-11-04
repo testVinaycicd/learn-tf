@@ -1,0 +1,12 @@
+# precona/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: mongodb
+resources:
+  - seed-job.yaml
+  # (add other YAMLs if you want)
+
+# 👇 this is the key part
+images:
+  - name: crysis307/mongodb
+    newTag: latest

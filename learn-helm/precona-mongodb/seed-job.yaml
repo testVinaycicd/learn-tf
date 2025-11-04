@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cataloguedb-seed
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: crysis307/mongodb:0.0.0
+          command: ["bash","-lc"]
+          args:
+            - |
+              set -euo pipefail
+              mongosh "$MONGO_URI" --file /seed/init.js
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: psmdb-users  # create from Vault/ESO or regular Secret
+                  key: MONGODB_URI
+          # mount /seed if your image expects external files
+
+---

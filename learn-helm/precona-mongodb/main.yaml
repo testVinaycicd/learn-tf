@@ -1,0 +1,87 @@
+
+
+apiVersion: psmdb.percona.com/v1
+kind: PerconaServerMongoDB
+metadata:
+  name: mongodb
+spec:
+  crVersion: 1.15.0
+  image: percona/percona-server-mongodb:6.0.15-18
+  allowUnsafeConfigurations: false
+  updateStrategy: RollingUpdate
+
+
+
+#  target:
+#    name: psmdb-users
+#    template:
+#      data:
+#        MONGO_INITDB_ROOT_USERNAME: "{{ .MONGO_INITDB_ROOT_USERNAME }}"
+#        MONGO_INITDB_ROOT_PASSWORD: "{{ .MONGO_INITDB_ROOT_PASSWORD }}"
+##        MONGO_URI: "mongodb://{{ .MONGODB_USER_ADMIN_USER }}:{{ .MONGODB_USER_ADMIN_PASSWORD }}@{{ .HOST }}/?replicaSet={{ .RS }}"
+#  dataFrom:
+#    - extract:
+#        key: kv/psmdb
+
+
+
+  replsets:
+    - name: rs0
+      size: 3
+      affinity:
+        antiAffinityTopologyKey: kubernetes.io/hostname
+      podDisruptionBudget:
+        minAvailable: 2
+      volumeSpec:
+        persistentVolumeClaim:
+          storageClassName: gp3
+          resources:
+            requests:
+              storage: 20Gi
+      resources:
+        requests:
+          cpu: "250m"
+          memory: "512Mi"
+        limits:
+          cpu: "1000m"
+          memory: "2Gi"
+      expose:
+        enabled: false # ClusterIP only
+      nonvoting:
+        enabled: false
+
+
+## Enable percona backup manager (PBM)
+#  backup:
+#    enabled: true
+#    image: percona/percona-backup-mongodb:2.5.1
+#    storages:
+#      s3-us:
+#        type: s3
+#        s3:
+#          bucket: $(S3_BUCKET)
+#          region: $(S3_REGION)
+#          credentialsSecret: psmdb-backup-s3
+#  # If using Pod Identity, drop credentialsSecret and rely on IAM
+#    tasks:
+#      - name: nightly-snapshots
+#        enabled: true
+#        schedule: "0 18 * * *" # 11:30 PM IST backups (18:00 UTC)
+#        keep: 7
+#        type: snapshot
+#        storageName: s3-us
+
+
+  # Metrics for Prometheus
+#  sharding:
+#      enabled: false
+#  mongod:
+#      net:
+#        port: 27017
+#      security:
+#        enableEncryption: true
+#        encryptionKeySecret: "" # leave empty to auto-manage; for KMIP/HSM, set accordingly
+#  pmm:
+#      enabled: false
+#  monitoring:
+#      enabled: true
