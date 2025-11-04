@@ -155,23 +155,23 @@ resource "null_resource" "nginx_issuer" {
 
 }
 
-resource "helm_release" "aws_ebs_csi_driver" {
-  depends_on = [null_resource.kubeconfig]
-  name             = "aws-ebs-csi-driver"
-  repository       = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
-  chart            = "aws-ebs-csi-driver"
-  namespace        = "default"
-  create_namespace = true
-
-  # optional: pin a version
-  # version = "2.33.0"
-
-  # examples of common values (usually fine with defaults)
-  # set {
-  #   name  = "controller.replicaCount"
-  #   value = 2
-  # }
-}
+# resource "helm_release" "aws_ebs_csi_driver" {
+#   depends_on = [null_resource.kubeconfig]
+#   name             = "aws-ebs-csi-driver"
+#   repository       = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
+#   chart            = "aws-ebs-csi-driver"
+#   namespace        = "default"
+#   create_namespace = true
+#
+#   # optional: pin a version
+#   # version = "2.33.0"
+#
+#   # examples of common values (usually fine with defaults)
+#   # set {
+#   #   name  = "controller.replicaCount"
+#   #   value = 2
+#   # }
+# }
 
 resource "helm_release" "argocd" {
   depends_on = [null_resource.kubeconfig, helm_release.external-dns, helm_release.ingress, helm_release.cert-manager]

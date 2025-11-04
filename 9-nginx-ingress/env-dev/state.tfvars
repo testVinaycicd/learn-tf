@@ -21,4 +21,5 @@ access = {
 
 addons = {
   eks-pod-identity-agent ={}
+  aws-ebs-csi-driver ={}
 }

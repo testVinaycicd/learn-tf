@@ -78,3 +78,32 @@ resource "aws_launch_template" "ng" {
   name_prefix = "${var.cluster_name}-ng-"
   vpc_security_group_ids = [aws_security_group.nodes.id]
 }
+
+data "aws_iam_policy" "ebs_csi" {
+  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+data "aws_iam_policy_document" "pod_identity_trust" {
+  statement {
+    effect    = "Allow"
+    principals { type = "Service", identifiers = ["pods.eks.amazonaws.com"] }
+    actions   = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "ebs_csi_pi" {
+  name               = "EKS_EBS_CSI_Addon_PodIdentity"
+  assume_role_policy = data.aws_iam_policy_document.pod_identity_trust.json
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
+  role       = aws_iam_role.ebs_csi_pi.name
+  policy_arn = data.aws_iam_policy.ebs_csi.arn
+}
+
+resource "aws_eks_pod_identity_association" "ebs_csi" {
+  cluster_name    = var.cluster_name
+  namespace       = "default"
+  service_account = "ebs-csi-controller-sa"
+  role_arn        = aws_iam_role.ebs_csi_pi.arn
+}
