@@ -1,4 +1,4 @@
-image_tag=$1
+#image_tag=$1
 
 PASSWORD=$(kubectl get secrets -n argocd argocd-initial-admin-secret -o json | jq .data.password|xargs | base64 --decode)
 argocd login learn-argocd-dev.mikeydevops1.online --grpc-web --insecure --username admin --password $PASSWORD
