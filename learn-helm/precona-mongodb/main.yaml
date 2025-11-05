@@ -7,7 +7,7 @@ metadata:
   namespace: default
 spec:
   crVersion: 1.15.0
-  image: percona/percona-server-mongodb:8.0
+  image: percona/percona-server-mongodb:6.0
   allowUnsafeConfigurations: false
   updateStrategy: RollingUpdate
 
