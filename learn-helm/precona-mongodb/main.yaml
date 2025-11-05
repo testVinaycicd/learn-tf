@@ -11,16 +11,16 @@ spec:
   allowUnsafeConfigurations: false
   updateStrategy: RollingUpdate
 
-
-
-
   replsets:
     - name: rs0
       size: 3
-      podSpec:
-        env:
-          - name: DISABLE_NUMA
-            value: "true"
+      template:
+        spec:
+          containers:
+            - name: mongod
+              env:
+                - name: DISABLE_NUMA
+                  value: "true"
       affinity:
         antiAffinityTopologyKey: kubernetes.io/hostname
       podDisruptionBudget:
@@ -30,7 +30,7 @@ spec:
           storageClassName: gp3
           resources:
             requests:
-              storage: 20Gi
+              storage: 10Gi
       resources:
         requests:
           cpu: "250m"
