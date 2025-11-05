@@ -74,6 +74,8 @@ resource "aws_eks_node_group" "default" {
 
 }
 
+
+# ebs csi driver
 resource "aws_eks_access_entry" "main" {
   for_each          = var.access
   cluster_name      = aws_eks_cluster.this.name
@@ -81,14 +83,10 @@ resource "aws_eks_access_entry" "main" {
   type              = "STANDARD"
 }
 
-resource "aws_eks_addon" "ebs_csi" {
-  cluster_name = var.cluster_name
-  addon_name   = "aws-ebs-csi-driver"
-  # addon_version = "v1.29.0-eksbuild.1" # optional pin
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
-}
 
+
+
+# giving access policy for other roles
 resource "aws_eks_access_policy_association" "main" {
   for_each      = var.access
   cluster_name  = aws_eks_cluster.this.name

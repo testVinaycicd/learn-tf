@@ -81,24 +81,33 @@ resource "aws_launch_template" "ng" {
 
 
 #ebs csi
-data "aws_iam_policy" "ebs_csi" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+
+resource "aws_eks_addon" "ebs_csi" {
+  cluster_name = var.cluster_name
+  addon_name   = "aws-ebs-csi-driver"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
 }
 
-data "aws_iam_policy_document" "pod_identity_trust" {
+
+data "aws_iam_policy_document" "ebs_csi_pod_identity_trust" {
   statement {
-    effect    = "Allow"
+    effect = "Allow"
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["pods.eks.amazonaws.com"]
     }
-    actions   = ["sts:AssumeRole"]
+    actions = ["sts:AssumeRole"]
   }
 }
 
 resource "aws_iam_role" "ebs_csi_pi" {
-  name               = "EKS_EBS_CSI_Addon_PodIdentity"
-  assume_role_policy = data.aws_iam_policy_document.pod_identity_trust.json
+  name               = "EKS_EBS_CSI_PodIdentityRole"
+  assume_role_policy = data.aws_iam_policy_document.ebs_csi_pod_identity_trust.json
+}
+
+data "aws_iam_policy" "ebs_csi" {
+  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
@@ -106,9 +115,13 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
   policy_arn = data.aws_iam_policy.ebs_csi.arn
 }
 
+
 resource "aws_eks_pod_identity_association" "ebs_csi" {
   cluster_name    = var.cluster_name
   namespace       = "kube-system"
   service_account = "ebs-csi-controller-sa"
   role_arn        = aws_iam_role.ebs_csi_pi.arn
+
+  depends_on = [aws_eks_addon.ebs_csi]
+
 }
