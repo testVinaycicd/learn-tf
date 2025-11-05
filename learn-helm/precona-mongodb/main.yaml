@@ -14,15 +14,7 @@ spec:
   replsets:
     - name: rs0
       size: 3
-      template:
-        spec:
-          containers:
-            - name: mongod
-              env:
-                - name: DISABLE_NUMA
-                  value: "true"
-      affinity:
-        antiAffinityTopologyKey: kubernetes.io/hostname
+
       podDisruptionBudget:
         minAvailable: 2
       volumeSpec:
@@ -67,8 +59,8 @@ spec:
 
 
   # Metrics for Prometheus
-#  sharding:
-#      enabled: false
+  sharding:
+      enabled: false
 #  mongod:
 #      net:
 #        port: 27017
