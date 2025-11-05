@@ -84,6 +84,7 @@ resource "aws_launch_template" "ng" {
 
 # 1) EKS managed add-on (NO service_account_role_arn for Pod Identity)
 resource "aws_eks_addon" "ebs_csi" {
+  depends_on = [aws_eks_cluster.this]
   cluster_name = var.cluster_name
   addon_name   = "aws-ebs-csi-driver"
   # addon_version = "v1.30.0-eksbuild.1" # optional pin
