@@ -35,7 +35,7 @@ spec:
         enabled: false # ClusterIP only
 
   secrets:
-    users: psmdb-users-v115
+    users: pdbms-user-env
 
 
 ## Enable percona backup manager (PBM)
