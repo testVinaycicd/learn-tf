@@ -17,6 +17,10 @@ spec:
   replsets:
     - name: rs0
       size: 3
+      podSpec:
+        env:
+          - name: DISABLE_NUMA
+            value: "true"
       affinity:
         antiAffinityTopologyKey: kubernetes.io/hostname
       podDisruptionBudget:
