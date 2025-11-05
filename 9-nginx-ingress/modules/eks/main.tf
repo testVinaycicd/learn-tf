@@ -18,6 +18,10 @@ resource "aws_eks_addon" "addons" {
   addon_name   = each.key
 }
 
+data "http" "myip" {
+  url = "https://checkip.amazonaws.com/"
+}
+
 # --- EKS Cluster (EKS will create & wire SGs automatically) ---
 resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
@@ -29,7 +33,7 @@ resource "aws_eks_cluster" "this" {
     subnet_ids               = var.private_subnet_ids
     endpoint_private_access  = true
     endpoint_public_access   = true
-    public_access_cidrs      = ["98.84.127.208/32"]
+    public_access_cidrs     = ["${chomp(data.http.myip.response_body)}/32"]
   }
 
 
