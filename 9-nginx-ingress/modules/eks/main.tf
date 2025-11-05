@@ -79,7 +79,6 @@ resource "aws_eks_node_group" "default" {
 }
 
 
-# ebs csi driver
 resource "aws_eks_access_entry" "main" {
   for_each          = var.access
   cluster_name      = aws_eks_cluster.this.name

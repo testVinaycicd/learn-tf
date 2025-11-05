@@ -82,14 +82,16 @@ resource "aws_launch_template" "ng" {
 
 #ebs csi
 
+# 1) EKS managed add-on (NO service_account_role_arn for Pod Identity)
 resource "aws_eks_addon" "ebs_csi" {
   cluster_name = var.cluster_name
   addon_name   = "aws-ebs-csi-driver"
+  # addon_version = "v1.30.0-eksbuild.1" # optional pin
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 }
 
-
+# 2) IAM role trusted for Pod Identity (NOT IRSA)
 data "aws_iam_policy_document" "ebs_csi_pod_identity_trust" {
   statement {
     effect = "Allow"
@@ -115,13 +117,13 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
   policy_arn = data.aws_iam_policy.ebs_csi.arn
 }
 
-
+# 3) Bind the role to the add-on's controller SA via Pod Identity
 resource "aws_eks_pod_identity_association" "ebs_csi" {
   cluster_name    = var.cluster_name
   namespace       = "kube-system"
   service_account = "ebs-csi-controller-sa"
   role_arn        = aws_iam_role.ebs_csi_pi.arn
-
-  depends_on = [aws_eks_addon.ebs_csi]
-
+  depends_on      = [aws_eks_addon.ebs_csi]  # wait until SA exists
 }
+
+
