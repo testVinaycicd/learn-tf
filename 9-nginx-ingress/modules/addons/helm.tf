@@ -222,12 +222,15 @@ resource "helm_release" "psmdb_operator" {
 
 # 1) EKS managed add-on (NO service_account_role_arn for Pod Identity)
 resource "aws_eks_addon" "ebs_csi" {
-  depends_on = [null_resource.kubeconfig]
+
   cluster_name = var.cluster_name
   addon_name   = "aws-ebs-csi-driver"
   # addon_version = "v1.30.0-eksbuild.1" # optional pin
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
+  depends_on = [
+    aws_eks_pod_identity_association.ebs_csi
+  ]
 }
 
 # 2) IAM role trusted for Pod Identity (NOT IRSA)
@@ -258,11 +261,11 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
 
 # 3) Bind the role to the add-on's controller SA via Pod Identity
 resource "aws_eks_pod_identity_association" "ebs_csi" {
-  cluster_name    = var.cluster_name
+  cluster_name    = "mikey-eks"
   namespace       = "kube-system"
   service_account = "ebs-csi-controller-sa"
   role_arn        = aws_iam_role.ebs_csi_pi.arn
-  depends_on      = [aws_eks_addon.ebs_csi,aws_iam_role_policy_attachment.ebs_csi_attach]  # wait until SA exists
+  depends_on      = [aws_iam_role_policy_attachment.ebs_csi_attach]  # wait until SA exists
 }
 
 
