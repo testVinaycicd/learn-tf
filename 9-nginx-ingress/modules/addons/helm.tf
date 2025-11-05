@@ -155,23 +155,7 @@ resource "null_resource" "nginx_issuer" {
 
 }
 
-# resource "helm_release" "aws_ebs_csi_driver" {
-#   depends_on = [null_resource.kubeconfig]
-#   name             = "aws-ebs-csi-driver"
-#   repository       = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
-#   chart            = "aws-ebs-csi-driver"
-#   namespace        = "default"
-#   create_namespace = true
-#
-#   # optional: pin a version
-#   # version = "2.33.0"
-#
-#   # examples of common values (usually fine with defaults)
-#   # set {
-#   #   name  = "controller.replicaCount"
-#   #   value = 2
-#   # }
-# }
+
 
 resource "helm_release" "argocd" {
   depends_on = [null_resource.kubeconfig, helm_release.external-dns, helm_release.ingress, helm_release.cert-manager]
@@ -234,3 +218,18 @@ resource "helm_release" "psmdb_operator" {
   timeout       = 600
   recreate_pods = false
 }
+
+# resource "helm_release" "kube-prometheus-stack" {
+#   depends_on = [null_resource.kubeconfig, helm_release.ingress, helm_release.cert-manager]
+#   name       = "kube-prom-stack"
+#   repository = "https://prometheus-community.github.io/helm-charts"
+#   chart      = "kube-prometheus-stack"
+#
+#   # values = [templatefile("${path.module}/helm-config/prom-stack-template.yml", {
+#   #   SMTP_user_name = data.vault_generic_secret.smtp.data["username"]
+#   #   SMTP_password  = data.vault_generic_secret.smtp.data["password"]
+#   # })]
+#   values = [
+#     file("${path.module}/helmconfig/prograf.yaml")
+#   ]
+# }
