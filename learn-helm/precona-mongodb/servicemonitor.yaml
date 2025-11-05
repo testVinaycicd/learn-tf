@@ -1,11 +1,15 @@
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: psmdb
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/part-of: percona-server-mongodb
-    endpoints:
-      - port: metrics
-        interval: 30s
+#apiVersion: monitoring.coreos.com/v1
+#kind: ServiceMonitor
+#metadata:
+#  name: psmdb
+#  labels:
+#    app.kubernetes.io/part-of: percona-server-mongodb
+#spec:
+#  selector:
+#    matchLabels:
+#      app.kubernetes.io/part-of: percona-server-mongodb
+#
+#  # scrape the Service port named "metrics"
+#  endpoints:
+#    - port: metrics
+#      interval: 30s
