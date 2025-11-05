@@ -6,9 +6,9 @@ resources:
   - main.yaml
   - pdb.yaml
   - seed-job.yaml
-  - servicemonitor.yaml
+#  - servicemonitor.yaml
   - user-external-secret.yaml
-
+  - storageclass.yaml
   # (add other YAMLs if you want)
 
 # 👇 this is the key part
