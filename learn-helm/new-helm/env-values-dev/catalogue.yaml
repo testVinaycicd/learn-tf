@@ -8,7 +8,7 @@ statefulset:
 
 extraEnvFrom:
     - secretRef:
-          name: catalogue-mongo-url
+          name: catalogue-mongo-url-new
 
 
 

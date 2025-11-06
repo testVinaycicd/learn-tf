@@ -44,3 +44,20 @@ hpa:
     minReplicas: 2
     maxReplicas: 6
     targetCPUUtilizationPercentage: 70
+
+
+extraVolumeMounts:
+    - name: nginx-cache
+      mountPath: /var/cache/nginx
+    - name: nginx-run
+      mountPath: /var/run
+    - name: nginx-log
+      mountPath: /var/log/nginx
+
+extraVolumes:
+    - name: nginx-cache
+      emptyDir: {}
+    - name: nginx-run
+      emptyDir: {}
+    - name: nginx-log
+      emptyDir: {}
