@@ -1,18 +1,20 @@
+global:
+  domain: learn-argocd-dev.mikeydevops1.online
+
 configs:
   params:
     server.insecure: "true"
-  cm:
-    url: https://learn-argocd-dev.mikeydevops1.online
+#  cm:
+#    url: https://learn-argocd-dev.mikeydevops1.online
 
 server:
   ingress:
     enabled: true
     ingressClassName: nginx
-    hosts:
-      - learn-argocd-dev.mikeydevops1.online
-    tls:
-      - secretName: argocd-tls
-        hosts:
-          - learn-argocd-dev.mikeydevops1.online
+    hostname: learn-argocd-dev.mikeydevops1.online
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-staging
+    extraTls:
+      - hosts:
+          - learn-argocd-dev.mikeydevops1.online
+        secretName: argocd-server-tls
