@@ -13,7 +13,8 @@ spec:
           args:
             - |
               set -euo pipefail
-              mongosh "$MONGO_URL" --file /seed/init.js
+              ls -lah /app/db
+              mongosh "$MONGO_URL" </app/db/master-data.js
           env:
             - name: MONGO_URL
               valueFrom:
