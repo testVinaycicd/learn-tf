@@ -42,7 +42,10 @@ spec:
           ports:
             - containerPort: 8080
 
-
+  {{- if .Values.env }}
+          env:
+  {{ toYaml .Values.env | nindent 12 }}
+    {{- end}}
           # bring in non-secret app config (keep this if you still use the ConfigMap)
           envFrom:
             - configMapRef:
@@ -51,18 +54,10 @@ spec:
             {{- with .Values.envFrom }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-            {{- with .Values.extraEnvFrom }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
+
             {{- end }}
 
-          # source of truth for the connection string
-          env:
-            - name: MONGO_URL
-              valueFrom:
-                secretKeyRef:
-                  name: catalogue-mongo-url-new
-                  key: MONGO_URL
+
 
           resources:
             requests: { cpu: {{ .Values.resources.requests.cpu }} , memory: {{ .Values.resources.requests.memory }} }
