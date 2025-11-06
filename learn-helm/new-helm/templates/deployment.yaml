@@ -133,7 +133,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: {{ .Values.component_name }}
-          image: {{ .Values.image.repository }}/{{ .Values.component_name }}:{{ .Values.image.tag }}
+          image: {{ .Values.image.repository }}/{{ .Values.component_name }}:{{ default "latest" .Values.image.tag }}
           imagePullPolicy: Always
 
           securityContext:

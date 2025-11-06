@@ -4,10 +4,15 @@ install:
 	helm upgrade -i mongodb . -f env-values-dev/mongodb.yaml
 
 template:
-	helm template ${component} . -f env-values-dev/${component}.yaml
+	helm template ${component} . -f env-values-dev/${component}.yaml --set imageTag=${image.tag}
 
 
 uninstall:
 	helm uninstall mongodb
 	helm uninstall frontend
 	helm uninstall catalogue
+
+
+
+#helm template frontend . -f env-values-dev/frontend.yaml --set image.tag="fc0a694271566318bd8ff418c851cabc168b26d8"
+

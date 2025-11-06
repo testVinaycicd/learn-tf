@@ -5,9 +5,35 @@ PASSWORD=$(kubectl get secrets -n argocd argocd-initial-admin-secret -o json | j
 argocd login learn-argocd-dev.mikeydevops1.online --grpc-web --insecure --username admin --password $PASSWORD
 
 
-#argocd app create ${component_name} --upsert --repo https://github.com/testVinaycicd/learn-tf.git --path "learn-helm/new-helm" --dest-namespace default --dest-server https://kubernetes.default.svc --values env-${env}/${component_name}.yaml --helm-set imageTag=${imageTag}
-argocd app create "${component_name}" --project default --repo https://github.com/testVinaycicd/learn-tf.git --path "learn-helm/new-helm" --revision main --dest-server https://kubernetes.default.svc --dest-namespace default --values "env-values-dev/${component_name}.yaml" --sync-policy automated --self-heal  --auto-prune --helm-set "image.tag=${image_tag}"
-argocd app sync "${component_name}"  --grpc-web
+#argocd app create "${component_name}" --project default --repo https://github.com/testVinaycicd/learn-tf.git --path "learn-helm/new-helm" --revision main --dest-server https://kubernetes.default.svc --dest-namespace default --values "env-values-dev/${component_name}.yaml" --sync-policy automated --self-heal  --auto-prune --helm-set "image.tag=${image_tag}"
+#argocd app sync "${component_name}"  --grpc-web
+
+
+
+
+
+
+
+
+
+
+
+
+# like: helm --values file.yaml
+argocd app create "${component_name}" --repo https://github.com/testVinaycicd/learn-tf.git --path learn-helm/new-helm --revision main --dest-server https://kubernetes.default.svc --dest-namespace default --values env-values-dev/${component_name}.yaml --sync-policy automated --self-heal --auto-prune
+
+# like: helm --set-string ...
+argocd app set "${component_name}" --helm-set-string "image.tag=${imageTag}"
+
+
+argocd app sync "${component_name}" --grpc-web
+
+
+
+
+
+
+
 
 
 
