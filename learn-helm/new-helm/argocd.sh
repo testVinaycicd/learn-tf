@@ -20,7 +20,7 @@ argocd login learn-argocd-dev.mikeydevops1.online --grpc-web --insecure --userna
 
 
 # like: helm --values file.yaml
-argocd app create "${component_name}" --repo https://github.com/testVinaycicd/learn-tf.git --path learn-helm/new-helm --revision main --dest-server https://kubernetes.default.svc --dest-namespace default --values env-values-dev/${component_name}.yaml --sync-policy automated --self-heal --auto-prune
+argocd app create "${component_name}" --repo https://github.com/testVinaycicd/learn-tf.git --path learn-helm/new-helm --revision main --dest-server https://kubernetes.default.svc --dest-namespace default --values env-values-dev/${component_name}.yaml --sync-policy automated --self-heal --auto-prune  --upsert
 
 # like: helm --set-string ...
 argocd app set "${component_name}" --helm-set-string "image.tag=${imageTag}"
