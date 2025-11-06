@@ -1,12 +1,18 @@
 configs:
   params:
-    server.insecure: true
+    server.insecure: "true"
+  cm:
+    url: https://learn-argocd-dev.mikeydevops1.online
 
-## For nginx ingress
 server:
   ingress:
     enabled: true
     ingressClassName: nginx
-    tls: true
+    hosts:
+      - learn-argocd-dev.mikeydevops1.online
+    tls:
+      - secretName: argocd-tls
+        hosts:
+          - learn-argocd-dev.mikeydevops1.online
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-staging
