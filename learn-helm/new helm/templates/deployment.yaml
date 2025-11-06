@@ -1,59 +1,211 @@
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#    name: {{ .Values.component_name }}
+##    namespace: {{ .Values.namespace }}
+#    labels:
+#        app: {{ .Values.component_name }}
+#spec:
+#    replicas: {{ .Values.replicas | default 1 }}
+#    selector:
+#        matchLabels:
+#            app: {{ .Values.component_name }}
+#    strategy:
+#      rollingUpdate: { maxSurge: 1, maxUnavailable: 0 } #add extra pod during updates
+#    terminationGracePeriodSeconds: 30 # wait 30s for pod to shut down graceefully
+#    lifecycle:
+#      preStop:
+#        exec: { command: [ "/bin/sh","-c","sleep 5" ] }
+#
+#    template:
+#        metadata:
+#            labels:
+#                app: {{ .Values.component_name }}
+#        spec:
+#          # ⬇️ put this under spec.template.spec in each Deployment
+#          affinity:
+#            # 1) Keep *this service’s* replicas on different nodes
+#            podAntiAffinity:
+#              requiredDuringSchedulingIgnoredDuringExecution:
+#                - topologyKey: kubernetes.io/hostname
+#                  labelSelector:
+#                    matchLabels:
+#                      app: {{ .Values.component_name }}
+#
+#                    # e.g., frontend
+#
+#            # 2) Evenly spread across AZs
+#          topologySpreadConstraints:
+#            - maxSkew: 1
+#              topologyKey: topology.kubernetes.io/zone
+#              whenUnsatisfiable: DoNotSchedule
+#              labelSelector:
+#                matchLabels:
+#                  app: {{ .Values.component_name }}
+#            serviceAccountName: {{ .Values.component_name }}
+#            volumes:
+#              - name: tmp
+#                emptyDir: {
+#                  sizeLimit: 64Mi
+#                }
+#            containers:
+#                - name: {{ .Values.component_name }}
+#                  securityContext:
+#                    runAsNonRoot: true
+#                    runAsUser: 10001
+#                    allowPrivilegeEscalation: false
+#                    readOnlyRootFilesystem: true
+#                    seccompProfile: { type: RuntimeDefault }
+#                    capabilities: { drop: [ "ALL" ] }
+#                  volumeMounts:
+#                    - name: tmp
+#                      mountPath: /tmp
+##                  image: {{ .Values.image | default (printf "crysis307/%s:latest" .Values.component_name) }}
+#                  image: {{ .Values.image.repository }}/{{ .Values.component_name }}:{{ .Values.image.tag }}
+#                  imagePullPolicy: Always
+#
+#                  ports:
+#                      - containerPort: {{ .Values.appPort }}
+#                  envFrom:
+#                      - configMapRef:
+#                            name: {{ .Values.component_name }}
+#                  resources:
+#                      requests:
+#                          cpu: {{ .Values.resources.requests.cpu | default "50m" }}
+#                          memory: {{ .Values.resources.requests.memory | default "64Mi" }}
+#                      limits:
+#                          cpu: {{ .Values.resources.limits.cpu | default "300m" }}
+#                          memory: {{ .Values.resources.limits.memory | default "256Mi" }}
+#
+#
+#                  {{- if eq (.Values.probeType | default "http") "tcp" }}
+#                  {{- /* MongoDB */}}
+#                  readinessProbe:
+#                      tcpSocket: { port: {{ .Values.appPort }} }
+#                      initialDelaySeconds: 5
+#                      periodSeconds: 5
+#                  livenessProbe:
+#                      tcpSocket: { port: {{ .Values.appPort }} }
+#                      initialDelaySeconds: 15
+#                      periodSeconds: 10
+#                  {{- else }}
+#                  {{- /* HTTP apps */}}
+#                  readinessProbe:
+#                      httpGet: { path: "/health", port: {{ .Values.appPort }} }
+#                      initialDelaySeconds: 5
+#                      periodSeconds: 10
+#                      timeoutSeconds: 2
+#                      failureThreshold: 3
+#                  livenessProbe:
+#                      httpGet: { path: "/health", port: {{ .Values.appPort }} }
+#                      initialDelaySeconds: 15
+#                      periodSeconds: 10
+#                      timeoutSeconds: 2
+#                      failureThreshold: 3
+#                  startupProbe:
+#                    httpGet: { path: /health, port: 8080 }
+#                    periodSeconds: 2
+#                    failureThreshold: 30
+#                  {{- end }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: {{ .Values.component_name }}
-#    namespace: {{ .Values.namespace }}
-    labels:
-        app: {{ .Values.component_name }}
+  name: {{ .Values.component_name }}
+  labels:
+    app: {{ .Values.component_name }}
 spec:
-    replicas: {{ .Values.replicas | default 1 }}
-    selector:
-        matchLabels:
-            app: {{ .Values.component_name }}
-    strategy:
-        type: RollingUpdate
-        rollingUpdate: { maxSurge: 1, maxUnavailable: 1 }
-    template:
-        metadata:
-            labels:
-                app: {{ .Values.component_name }}
-        spec:
-            serviceAccountName: {{ .Values.component_name }}
-            containers:
-                - name: {{ .Values.component_name }}
-                  image: {{ .Values.image | default (printf "crysis307/%s:latest" .Values.component_name) }}
-                  imagePullPolicy: Always
-                  ports:
-                      - containerPort: {{ .Values.appPort }}
-                  envFrom:
-                      - configMapRef:
-                            name: {{ .Values.component_name }}
-                  resources:
-                      requests:
-                          cpu: {{ .Values.resources.requests.cpu | default "50m" }}
-                          memory: {{ .Values.resources.requests.memory | default "64Mi" }}
-                      limits:
-                          cpu: {{ .Values.resources.limits.cpu | default "300m" }}
-                          memory: {{ .Values.resources.limits.memory | default "256Mi" }}
+  replicas: 2
+  selector:
+    matchLabels:
+      app: {{ .Values.component_name }}
+  strategy:
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+    type: RollingUpdate
 
-                  {{- if eq (.Values.probeType | default "http") "tcp" }}
-                  {{- /* MongoDB */}}
-                  readinessProbe:
-                      tcpSocket: { port: {{ .Values.appPort }} }
-                      initialDelaySeconds: 5
-                      periodSeconds: 5
-                  livenessProbe:
-                      tcpSocket: { port: {{ .Values.appPort }} }
-                      initialDelaySeconds: 15
-                      periodSeconds: 10
-                  {{- else }}
-                  {{- /* HTTP apps */}}
-                  readinessProbe:
-                      httpGet: { path: "/health", port: {{ .Values.appPort }} }
-                      initialDelaySeconds: 5
-                      periodSeconds: 10
-                  livenessProbe:
-                      httpGet: { path: "/health", port: {{ .Values.appPort }} }
-                      initialDelaySeconds: 15
-                      periodSeconds: 10
-                  {{- end }}
+  template:
+    metadata:
+      labels: { app: {{ .Values.component_name }} }
+    spec:
+      serviceAccountName: {{ .Values.component_name }}
+
+      # Pod lifecycle + graceful shutdown
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: {{ .Values.component_name }}
+          image: {{ .Values.image.repository }}/{{ .Values.component_name }}:{{ .Values.image.tag }}
+          imagePullPolicy: Always
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            seccompProfile: { type: RuntimeDefault }
+            capabilities: { drop: ["ALL"] }
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+          ports:
+            - containerPort: 8080
+
+
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.component_name }}
+            {{- if eq (.Values.component_name) "catalogue" }}
+            {{- with .Values.extraEnvFrom }}
+{{ toYaml . | nindent 12 }}
+            {{- end }}
+            {{- end }}
+          resources:
+            requests: { cpu: {{ .Values.resources.requests.cpu }} , memory: {{ .Values.resources.requests.memory }} }
+            limits:   { cpu: {{ .Values.resources.limits.cpu }} , memory: {{ .Values.resources.limits.memory }} }
+
+
+          readinessProbe:
+              httpGet: { path: "/health", port: {{ .Values.appPort }} }
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              timeoutSeconds: 2
+              failureThreshold: 3
+          livenessProbe:
+              httpGet: { path: "/health", port: {{ .Values.appPort }} }
+              initialDelaySeconds: 15
+              periodSeconds: 10
+              timeoutSeconds: 2
+              failureThreshold: 3
+          startupProbe:
+            httpGet: { path: /health, port: 8080 }
+            periodSeconds: 2
+            failureThreshold: 30
+
+
+          lifecycle:
+            preStop:
+              exec: { command: ["/bin/sh","-c","sleep 5"] }
+
+      # Scheduling rules
+      affinity:
+        # Keep replicas on different NODES
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels: { app: {{ .Values.component_name }} }
+
+      # Spread evenly across AZs
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels: { app: {{ .Values.component_name }} }
+
+      # Scratch space
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

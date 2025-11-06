@@ -4,7 +4,7 @@ deployment:
     enabled: true
 
 statefulset:
-    enabled: false
+    enabled:
 
 
 replicas: 2
