@@ -8,16 +8,21 @@ statefulset:
 
 extraEnvFrom:
     - secretRef:
-          name: catalogue-mongo-url-new
+          name: pdbms-user-env
 
+env:
+    - name: MONGO_URL
+      value: >-
+          mongodb://$(MONGODB_DATABASE_ADMIN_USER):$(MONGODB_DATABASE_ADMIN_PASSWORD)@
+          mongodb-rs0.default.svc.cluster.local:27017/catalogue?replicaSet=rs0&authSource=admin&directConnection=false
 
 
 replicas: 2
 
 configMapValues:
+
     DB_TYPE: mongo
     MONGO: "true"
-    DB_HOST: mongodb-rs0-0.mongodb-rs0.default.svc.cluster.local:27017,mongodb-rs0-1.mongodb-rs0.default.svc.cluster.local:27017,mongodb-rs0-2.mongodb-rs0.default.svc.cluster.local:27017/catalogue?replicaSet=rs0&authSource=admin
 
 service:
     type: ClusterIP
