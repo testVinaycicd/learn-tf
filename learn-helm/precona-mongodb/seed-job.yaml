@@ -13,8 +13,8 @@ spec:
           args:
             - |
               set -euo pipefail
-              ls -lah /app/db
-              mongosh "$MONGO_URL" </app/db/master-data.js
+              ls -lah /docker-entrypoint-initdb.d
+              mongosh "$MONGO_URL" </docker-entrypoint-initdb.d/master-data.js
           env:
             - name: MONGO_URL
               valueFrom:
