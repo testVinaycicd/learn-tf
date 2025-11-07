@@ -1,33 +1,89 @@
+#apiVersion: batch/v1
+#kind: Job
+#metadata:
+#  name: cataloguedb-seed
+#spec:
+#  template:
+#    spec:
+#      restartPolicy: Never
+#      containers:
+#        - name: seed
+#          image: crysis307/mongodb:latest
+#          command: ["bash","-lc"]
+#          args:
+#            - |
+#              set -euo pipefail
+#              ls -lah /docker-entrypoint-initdb.d
+#
+#              echo "Granting userAdmin write on catalogue & users..."
+#              mongosh "$ADMIN_URL" --eval '
+#                db.grantRolesToUser("userAdmin", [
+#                  { role: "readWrite", db: "catalogue" },
+#                  { role: "readWrite", db: "users" }
+#                ])
+#              '
+#
+#              echo "Seeding master-data.js..."
+#              mongosh "$ADMIN_URL" </docker-entrypoint-initdb.d/master-data.js
+#
+#              echo "Done."
+#          env:
+#            - name: MONGO_ADMIN_USER
+#              valueFrom:
+#                secretKeyRef:
+#                  name: internal-mongodb-users
+#                  key: MONGODB_CLUSTER_ADMIN_USER
+#            - name: MONGO_ADMIN_PASS
+#              valueFrom:
+#                secretKeyRef:
+#                  name: internal-mongodb-users
+#                  key: MONGODB_CLUSTER_ADMIN_PASSWORD
+#            - name: ADMIN_URL
+#              value: >-
+#                mongodb://$(MONGO_ADMIN_USER):$(MONGO_ADMIN_PASS)@mongodb-rs0.default.svc.cluster.local:27017/admin?replicaSet=rs0&authSource=admin&directConnection=false
+#
+#---
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: cataloguedb-seed
 spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
   template:
     spec:
       restartPolicy: Never
       containers:
         - name: seed
-          image: crysis307/mongodb:latest
+          image: mongo:7
           command: ["bash","-lc"]
           args:
             - |
               set -euo pipefail
-              ls -lah /docker-entrypoint-initdb.d
-              
-              echo "Granting userAdmin write on catalogue & users..."
+
+              # Build ADMIN_URL at runtime from env parts
+              ADMIN_URL="mongodb://${MONGO_ADMIN_USER}:${MONGO_ADMIN_PASS}@${MONGO_HOST}:27017/admin?replicaSet=${MONGO_RS}&authSource=admin&directConnection=false"
+
+              echo "Waiting for Mongo primary..."
+              until mongosh --quiet "$ADMIN_URL" --eval 'db.runCommand({ping:1})' >/dev/null 2>&1; do
+                sleep 3
+              done
+
+              echo "Granting userAdmin write on catalogue & users (idempotent)..."
               mongosh "$ADMIN_URL" --eval '
-                db.grantRolesToUser("userAdmin", [
-                  { role: "readWrite", db: "catalogue" },
-                  { role: "readWrite", db: "users" }
-                ])
+                try {
+                  db.grantRolesToUser("userAdmin", [
+                    { role: "readWrite", db: "catalogue" },
+                    { role: "readWrite", db: "users" }
+                  ])
+                } catch(e) { if (!/User .* not found/.test(e)) throw e }
               '
-              
+
               echo "Seeding master-data.js..."
               mongosh "$ADMIN_URL" </docker-entrypoint-initdb.d/master-data.js
-              
               echo "Done."
           env:
+            # Pull REAL admin creds from operator-managed secret
             - name: MONGO_ADMIN_USER
               valueFrom:
                 secretKeyRef:
@@ -38,8 +94,8 @@ spec:
                 secretKeyRef:
                   name: internal-mongodb-users
                   key: MONGODB_CLUSTER_ADMIN_PASSWORD
-            - name: ADMIN_URL
-              value: >-
-                mongodb://$(MONGO_ADMIN_USER):$(MONGO_ADMIN_PASS)@mongodb-rs0.default.svc.cluster.local:27017/admin?replicaSet=rs0&authSource=admin&directConnection=false
-
----
+            # Static parts
+            - name: MONGO_HOST
+              value: "mongodb-rs0.default.svc.cluster.local"
+            - name: MONGO_RS
+              value: "rs0"
