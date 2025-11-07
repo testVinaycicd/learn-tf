@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: ingress-nginx-metrics
-  namespace: ingress-nginx
+  namespace: default
   labels:
     release: kube-prom-stack
 spec:
