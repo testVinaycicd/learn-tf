@@ -14,7 +14,7 @@ spec:
             - |
               set -euo pipefail
               ls -lah /docker-entrypoint-initdb.d
-              mongosh "admin_url" </docker-entrypoint-initdb.d/master-data.js
+              mongosh "$ADMIN_URL" </docker-entrypoint-initdb.d/master-data.js
           env:
             - name: admin_url
               value: >-
