@@ -28,21 +28,13 @@
 #
 #              echo "Done."
 #          env:
-#            - name: MONGO_ADMIN_USER
-#              valueFrom:
-#                secretKeyRef:
-#                  name: internal-mongodb-users
-#                  key: MONGODB_CLUSTER_ADMIN_USER
-#            - name: MONGO_ADMIN_PASS
-#              valueFrom:
-#                secretKeyRef:
-#                  name: internal-mongodb-users
-#                  key: MONGODB_CLUSTER_ADMIN_PASSWORD
 #            - name: ADMIN_URL
 #              value: >-
-#                mongodb://$(MONGO_ADMIN_USER):$(MONGO_ADMIN_PASS)@mongodb-rs0.default.svc.cluster.local:27017/admin?replicaSet=rs0&authSource=admin&directConnection=false
+#                mongodb://userAdmin:oWu0Jis5g0f6d4FV@mongodb-rs0.default.svc.cluster.local:27017/admin?replicaSet=rs0&authSource=admin&directConnection=false
+#          # mount /seed if your image expects external files
 #
 #---
+
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -55,7 +47,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: seed
-          image: mongo:7
+          image: crysis307/mongodb:latest
           command: ["bash","-lc"]
           args:
             - |
