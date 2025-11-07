@@ -285,17 +285,17 @@ resource "aws_eks_pod_identity_association" "ebs_csi" {
 }
 
 
-resource "helm_release" "kube-prometheus-stack" {
-  depends_on = [null_resource.kubeconfig, helm_release.ingress, helm_release.cert-manager]
-  name       = "kube-prom-stack"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-
-  # values = [templatefile("${path.module}/helm-config/prom-stack-template.yml", {
-  #   SMTP_user_name = data.vault_generic_secret.smtp.data["username"]
-  #   SMTP_password  = data.vault_generic_secret.smtp.data["password"]
-  # })]
-  values = [
-    file("${path.module}/helmconfig/prograf.yaml")
-  ]
-}
+# resource "helm_release" "kube-prometheus-stack" {
+#   depends_on = [null_resource.kubeconfig, helm_release.ingress, helm_release.cert-manager]
+#   name       = "kube-prom-stack"
+#   repository = "https://prometheus-community.github.io/helm-charts"
+#   chart      = "kube-prometheus-stack"
+#
+#   # values = [templatefile("${path.module}/helm-config/prom-stack-template.yml", {
+#   #   SMTP_user_name = data.vault_generic_secret.smtp.data["username"]
+#   #   SMTP_password  = data.vault_generic_secret.smtp.data["password"]
+#   # })]
+#   values = [
+#     file("${path.module}/helmconfig/prograf.yaml")
+#   ]
+# }
