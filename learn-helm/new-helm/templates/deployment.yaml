@@ -120,7 +120,7 @@ spec:
       {{- end }}
   {{- end }}
       volumeMounts:
-  {{ - if eq (.Values.component_name) "frontend" }}
+  {{- if eq (.Values.component_name) "frontend" }}
       {{- with .Values.extraVolumeMounts }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
