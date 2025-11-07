@@ -7,6 +7,11 @@ metadata:
     app: {{ .Values.component_name }}
 spec:
   replicas: 2
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
   selector:
     matchLabels:
       app: {{ .Values.component_name }}
@@ -28,14 +33,10 @@ spec:
           imagePullPolicy: Always
 
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 101
-            runAsGroup: 101
-            fsGroup: 101
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
             seccompProfile: { type: RuntimeDefault }
-            capabilities: { drop: ["ALL"] }
+            capabilities: { drop: [ "ALL" ] }
 
           volumeMounts:
             - name: tmp
@@ -114,6 +115,12 @@ spec:
       {{- with .Values.extraVolumes }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.extraVolumeMounts }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- end }}
+      volumeMounts:
+  {{ - if eq (.Values.component_name) "frontend" }}
       {{- with .Values.extraVolumeMounts }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
