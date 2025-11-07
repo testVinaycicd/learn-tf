@@ -29,7 +29,9 @@ spec:
 
           securityContext:
             runAsNonRoot: true
-            runAsUser: 0
+            runAsUser: 101
+            runAsGroup: 101
+            fsGroup: 101
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
             seccompProfile: { type: RuntimeDefault }
@@ -110,6 +112,9 @@ spec:
             sizeLimit: 64Mi
   {{- if eq (.Values.component_name) "frontend" }}
       {{- with .Values.extraVolumes }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.extraVolumeMounts }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
   {{- end }}
