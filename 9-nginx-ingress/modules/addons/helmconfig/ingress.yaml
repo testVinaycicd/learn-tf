@@ -8,3 +8,6 @@ controller:
       external-dns.alpha.kubernetes.io/hostname: frontend-dev-test.mikeydevops1.online
   metrics:
     enabled: true
+  podAnnotations:
+    prometheus.io/port: "10254"
+    prometheus.io/scrape: "true"
