@@ -14,6 +14,7 @@ spec:
   replsets:
     - name: rs0
       size: 2
+
       affinity:
         antiAffinityTopologyKey: "kubernetes.io/hostname"
       podDisruptionBudget:
@@ -33,10 +34,20 @@ spec:
           memory: "2Gi"
       expose:
         enabled: false # ClusterIP only
+  users:
+    - name: catalogue_user
+      db: admin
+      passwordSecretRef:
+        name: catalogue-user-pass     # K8s Secret containing key "password"
+        key: password
+      roles:
+        - db: catalogue
+          name: readWrite
 
   secrets:
-    users: pdbms-user-env
+    users: pdbms-users
 
+#  kubectl create secret generic catalogue-user-pass --from-literal=password='catalogue_pass'
 
 ## Enable percona backup manager (PBM)
 #  backup:
