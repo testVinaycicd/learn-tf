@@ -16,7 +16,7 @@ spec:
               ls -lah /docker-entrypoint-initdb.d
               mongosh "$ADMIN_URL" </docker-entrypoint-initdb.d/master-data.js
           env:
-            - name: admin_url
+            - name: ADMIN_URL
               value: >-
                 mongodb://userAdmin:oWu0Jis5g0f6d4FV@mongodb-rs0.default.svc.cluster.local:27017/admin?replicaSet=rs0&authSource=admin&directConnection=false
           # mount /seed if your image expects external files
