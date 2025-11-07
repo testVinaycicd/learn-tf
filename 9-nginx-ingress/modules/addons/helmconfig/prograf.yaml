@@ -53,7 +53,8 @@ prometheus:
                 values: [ "true" ]
       - job_name: 'ingress'
         static_configs:
-          - targets: [ "ingress-nginx-controller-metrics:10254" ]
+          - targets:
+              - ingress-nginx-controller-metrics.ingress-nginx.svc.cluster.local:10254
 
 #alertmanager:
 #  ingress:
