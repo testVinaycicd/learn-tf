@@ -13,8 +13,7 @@ extraEnvFrom:
 env:
     - name: MONGO_URL
       value: >-
-          mongodb://$(MONGODB_DATABASE_ADMIN_USER):$(MONGODB_DATABASE_ADMIN_PASSWORD)@
-          mongodb-rs0.default.svc.cluster.local:27017/catalogue?replicaSet=rs0&authSource=admin&directConnection=false
+          mongodb://catalogue_user:catalogue_pass@mongodb-rs0.default.svc.cluster.local:27017/catalogue?replicaSet=rs0&authSource=admin&directConnection=false
 
 
 replicas: 2
