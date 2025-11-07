@@ -302,3 +302,12 @@ resource "helm_release" "kube-prometheus-stack" {
     file("${path.module}/helmconfig/prograf.yaml")
   ]
 }
+resource "null_resource" "nginx_issuer" {
+  depends_on = [ helm_release.kube-prometheus-stack]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.module}/helmconfig/servicemonitor.yaml"
+  }
+
+
+}
