@@ -29,7 +29,7 @@ spec:
 
           securityContext:
             runAsNonRoot: true
-            runAsUser: 10001
+            runAsUser: 0
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
             seccompProfile: { type: RuntimeDefault }
