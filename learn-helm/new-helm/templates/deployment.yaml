@@ -7,11 +7,7 @@ metadata:
     app: {{ .Values.component_name }}
 spec:
   replicas: 2
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 101
-    runAsGroup: 101
-    fsGroup: 101
+
   selector:
     matchLabels:
       app: {{ .Values.component_name }}
@@ -24,7 +20,11 @@ spec:
       labels: { app: {{ .Values.component_name }} }
     spec:
       serviceAccountName: {{ .Values.component_name }}
-
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
       # Pod lifecycle + graceful shutdown
       terminationGracePeriodSeconds: 30
       containers:
@@ -38,9 +38,7 @@ spec:
             seccompProfile: { type: RuntimeDefault }
             capabilities: { drop: [ "ALL" ] }
 
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
+
 
           ports:
             - containerPort: 8080

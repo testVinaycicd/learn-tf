@@ -53,6 +53,8 @@ extraVolumeMounts:
       mountPath: /var/run
     - name: nginx-log
       mountPath: /var/log/nginx
+    - name: tmp
+      mountPath: tmp
 
 extraVolumes:
     - name: nginx-cache
