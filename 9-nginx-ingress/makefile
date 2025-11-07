@@ -5,4 +5,4 @@ terraform:
 	terraform apply -var-file=env-dev/state.tfvars -auto-approve -var vault_token=$(vault_token)
 
 destroy:
-	terraform destroy -var-file=env-dev/state.tfvars -auto-approve
+	terraform destroy -var-file=env-dev/state.tfvars -auto-approve -var vault_token=$(vault_token)

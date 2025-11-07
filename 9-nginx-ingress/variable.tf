@@ -17,4 +17,7 @@ variable "access" {}
 variable "addons" {}
 
 
-variable "vault_token" {}
+variable "vault_token" {
+  sensitive = true
+
+}

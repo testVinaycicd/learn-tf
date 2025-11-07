@@ -4,4 +4,6 @@ variable "cluster_name" {
   default     = "mikey-eks"
 }
 
-variable "vault_token" {}
+variable "vault_token" {
+  sensitive = true
+}
