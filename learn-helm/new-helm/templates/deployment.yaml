@@ -62,7 +62,7 @@ spec:
 
           volumeMounts:
           {{- if eq (.Values.component_name) "frontend" }}
-            {{- with .Values.extraVolumeMounts }
+            {{- with .Values.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- end }}
