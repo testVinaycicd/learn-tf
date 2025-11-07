@@ -17,4 +17,4 @@ variable "access" {}
 variable "addons" {}
 
 
-
+variable "vault_token" {}
