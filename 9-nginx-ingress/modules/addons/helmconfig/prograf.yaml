@@ -1,6 +1,7 @@
 grafana:
   enabled: true
-
+  adminUser: admin
+  adminPassword: admin123
   ingress:
     enabled: true
     ingressClassName: nginx
