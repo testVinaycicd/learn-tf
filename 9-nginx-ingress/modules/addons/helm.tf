@@ -39,36 +39,43 @@ resource "null_resource" "set-secret" {
 
 resource "helm_release" "ingress" {
   depends_on = [null_resource.kubeconfig]
-  name       = "ingress-nginx"
-  repository = "https://kubernetes.github.io/ingress-nginx"
-  chart      = "ingress-nginx"
-  namespace  = "ingress-nginx"
+  name             = "ingress-nginx"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  namespace        = "ingress-nginx"
+  version          = "4.14.0"
   create_namespace = true
   values = [
     file("${path.module }/helmconfig/ingress.yaml")
   ]
 
-  wait    = true
-  timeout = 600
+  atomic          = true
+  cleanup_on_fail = true
+  wait            = true
+  timeout         = 1800
 }
 
 
 
 resource "helm_release" "cert-manager" {
-  depends_on       = [null_resource.kubeconfig,null_resource.tesd-config]
+  depends_on = [null_resource.kubeconfig, null_resource.tesd-config]
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
   namespace        = "cert-manager"
+  version          = "1.19.1"
   create_namespace = true
 
-  set  = [{
-    name  = "installCRDs"
-    value = "true"
-  }]
-
-  wait    = true
-  timeout = 600
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    }
+  ]
+  atomic          = true
+  cleanup_on_fail = true
+  wait            = true
+  timeout         = 1800
 
 }
 
