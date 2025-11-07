@@ -12,6 +12,14 @@ resource "null_resource" "tesd-config" {
   depends_on = [null_resource.kubeconfig]
 
   provisioner "local-exec" {
+    command = "kubectl create secret generic vault-token --from-literal=token=${var.vault_token} "
+  }
+}
+
+resource "null_resource" "set-secret" {
+  depends_on = [null_resource.kubeconfig]
+
+  provisioner "local-exec" {
     command = "kubectl get nodes "
   }
 }
