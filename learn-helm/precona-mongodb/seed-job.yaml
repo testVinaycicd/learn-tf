@@ -14,12 +14,19 @@ spec:
             - |
               set -euo pipefail
               ls -lah /docker-entrypoint-initdb.d
-              mongosh "$ADMIN_URL" </docker-entrypoint-initdb.d/master-data.js '
+              
+              echo "Granting userAdmin write on catalogue & users..."
+              mongosh "$ADMIN_URL" --eval '
                 db.grantRolesToUser("userAdmin", [
                   { role: "readWrite", db: "catalogue" },
                   { role: "readWrite", db: "users" }
                 ])
               '
+              
+              echo "Seeding master-data.js..."
+              mongosh "$ADMIN_URL" </docker-entrypoint-initdb.d/master-data.js
+              
+              echo "Done."
           env:
             - name: ADMIN_URL
               value: >-
