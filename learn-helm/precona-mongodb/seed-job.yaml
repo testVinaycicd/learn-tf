@@ -14,13 +14,11 @@ spec:
             - |
               set -euo pipefail
               ls -lah /docker-entrypoint-initdb.d
-              mongosh "$MONGO_URL" </docker-entrypoint-initdb.d/master-data.js
+              mongosh "admin_url" </docker-entrypoint-initdb.d/master-data.js
           env:
-            - name: MONGO_URL
-              valueFrom:
-                secretKeyRef:
-                  name: catalogue-mongo-url
-                  key: MONGO_URL
+            - name: admin_url
+              value: >-
+                mongodb://userAdmin:oWu0Jis5g0f6d4FV@mongodb-rs0.default.svc.cluster.local:27017/admin?replicaSet=rs0&authSource=admin&directConnection=false
           # mount /seed if your image expects external files
 
 ---
