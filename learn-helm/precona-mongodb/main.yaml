@@ -47,7 +47,7 @@ spec:
           name: readWrite
 
   secrets:
-    users: pdbms-users
+    users: psmdb-users
 
 #  kubectl create secret generic catalogue-user-pass --from-literal=password='catalogue_pass'
 
