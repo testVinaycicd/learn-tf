@@ -8,7 +8,6 @@ resources:
 #  - servicemonitor.yaml
   - main.yaml
   - storageclass.yaml
-  - init-container.yaml
   - seed-job.yaml
   # (add other YAMLs if you want)
 
