@@ -1,0 +1,20 @@
+initContainers:
+  - name: wait-mongo-user
+    image: mongo:7
+    env:
+      - name: MURL
+        valueFrom:
+          secretKeyRef:
+            name: catalogue-mongo-url
+            key: MONGO_URL
+    command: ["bash","-lc"]
+    args:
+      - |
+        set -e
+        # wait for ping
+        until mongosh "$MURL" --quiet --eval 'db.runCommand({ping:1})' >/dev/null 2>&1; do
+          echo "waiting for Mongo..."; sleep 3
+        done
+        # ensure user can actually auth
+        mongosh "$MURL" --quiet --eval 'db.getName()' >/dev/null
+        echo "mongo user ready"
