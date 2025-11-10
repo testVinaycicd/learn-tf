@@ -1,20 +1,27 @@
-initContainers:
-  - name: wait-mongo-user
-    image: mongo:7
-    env:
-      - name: MURL
-        valueFrom:
-          secretKeyRef:
-            name: catalogue-mongo-url
-            key: MONGO_URL
-    command: ["bash","-lc"]
-    args:
-      - |
-        set -e
-        # wait for ping
-        until mongosh "$MURL" --quiet --eval 'db.runCommand({ping:1})' >/dev/null 2>&1; do
-          echo "waiting for Mongo..."; sleep 3
-        done
-        # ensure user can actually auth
-        mongosh "$MURL" --quiet --eval 'db.getName()' >/dev/null
-        echo "mongo user ready"
+# precona/patches/init-container.yaml
+apiVersion: apps/v1
+kind: Deployment            # or StatefulSet if that’s what you run
+metadata:
+  name: test-user
+  argocd.argoproj.io/sync-wave: "0"# must match the workload you’re patching
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: wait-mongo-user
+          image: mongo:7
+          env:
+            - name: MURL
+              valueFrom:
+                secretKeyRef:
+                  name: catalogue-mongo-url
+                  key: MONGO_URL
+          command: ["bash","-lc"]
+          args:
+            - |
+              set -e
+              until mongosh "$MURL" --quiet --eval 'db.runCommand({ping:1})' >/dev/null 2>&1; do
+                echo "waiting for Mongo..."; sleep 3
+              done
+              mongosh "$MURL" --quiet --eval 'db.getName()' >/dev/null
+              echo "mongo user ready"

@@ -16,3 +16,5 @@ resources:
 images:
   - name: crysis307/mongodb
     newTag: latest
+
+  # your real workload file
