@@ -1,28 +1,35 @@
 # precona/patches/init-container.yaml
-apiVersion: apps/v1
-kind: Deployment            # or StatefulSet if that’s what you run
+apiVersion: psmdb.percona.com/v1
+kind: PerconaServerMongoDB
 metadata:
-  name: test-user
+  name: mongodb
   namespace: default
-  argocd.argoproj.io/sync-wave: "1"# must match the workload you’re patching
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
-  template:
-    spec:
-      initContainers:
-        - name: wait-mongo-user
-          image: mongo:7
-          env:
-            - name: MURL
-              valueFrom:
-                secretKeyRef:
-                  name: catalogue-mongo-url
-                  key: MONGO_URL
-          command: ["bash","-lc"]
-          args:
-            - |
-              set -e
-              until mongosh "$MURL" --quiet --eval 'db.runCommand({ping:1})' >/dev/null 2>&1; do
-                echo "waiting for Mongo..."; sleep 3
-              done
-              mongosh "$MURL" --quiet --eval 'db.getName()' >/dev/null
-              echo "mongo user ready"
+  replsets:
+    - name: rs0
+      template:
+        metadata:
+          annotations:
+            # optional extra annotations for the pod template
+            argocd.argoproj.io/sync-wave: "1"
+        spec:
+          initContainers:
+            - name: wait-mongo-user
+              image: mongo:7
+              env:
+                - name: MURL
+                  valueFrom:
+                    secretKeyRef:
+                      name: catalogue-mongo-url
+                      key: MONGO_URL
+              command: ["bash","-lc"]
+              args:
+                - |
+                  set -e
+                  until mongosh "$MURL" --quiet --eval 'db.runCommand({ping:1})' >/dev/null 2>&1; do
+                    echo "waiting for Mongo..."; sleep 3
+                  done
+                  mongosh "$MURL" --quiet --eval 'db.getName()' >/dev/null
+                  echo "mongo user ready"
