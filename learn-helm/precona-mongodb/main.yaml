@@ -6,7 +6,7 @@ metadata:
   name: mongodb
   namespace: default
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   crVersion: 1.16.1
   image: percona/percona-server-mongodb:6.0

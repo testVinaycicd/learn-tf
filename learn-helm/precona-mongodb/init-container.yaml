@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment            # or StatefulSet if that’s what you run
 metadata:
   name: test-user
-  argocd.argoproj.io/sync-wave: "0"# must match the workload you’re patching
+  argocd.argoproj.io/sync-wave: "1"# must match the workload you’re patching
 spec:
   template:
     spec:
