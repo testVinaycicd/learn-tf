@@ -63,7 +63,7 @@ resource "aws_eks_node_group" "default" {
     version = "$Latest"
   }
 
-  capacity_type = "SPOT" # keep simple/reliable for first bring-up
+  capacity_type = "ON_DEMAND" # keep simple/reliable for first bring-up
 
   update_config { max_unavailable = 1 }
 
