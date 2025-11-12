@@ -8,7 +8,7 @@ argocd login learn-argocd-dev.mikeydevops1.online --grpc-web --insecure --userna
 argocd app create psmdb-operator \
 --project default \
 --repo https://github.com/testVinaycicd/learn-tf.git \
---path learn-helm/precona-mongodb \
+--path learn-helm/precona-mongodb --revision 1.16.1 \
 --dest-server https://kubernetes.default.svc \
 --dest-namespace default \
 --sync-policy automated --self-heal --auto-prune --revision main \
