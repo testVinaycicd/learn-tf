@@ -3,7 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: percona-server-mongodb-operator
-  argocd.argoproj.io/sync-wave: "-1"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
 rules:
   - apiGroups:
       - psmdb.percona.com
@@ -138,14 +139,16 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  argocd.argoproj.io/sync-wave: "-1"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
   namespace: default
   name: percona-server-mongodb-operator
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  argocd.argoproj.io/sync-wave: "-1"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
   namespace: default
   name: service-account-percona-server-mongodb-operator
 subjects:
