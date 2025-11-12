@@ -81,7 +81,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: percona-server-mongodb-operator
-  argocd.argoproj.io/sync-wave: "-1"
+  argocd.argoproj.io/sync-wave: "0"
   labels:
     name: percona-server-mongodb-operator
     app.kubernetes.io/component: operator
