@@ -196,9 +196,9 @@ spec:
         - db: catalogue
           name: readWrite
 
-#  secrets:
-#    ssl: mongodb-ssl
-#    sslInternal: mongodb-ssl-internal
+  secrets:
+    ssl: mongodb-ssl
+    sslInternal: mongodb-ssl-internal
 #    users: psmdb-users
 
 #  kubectl create secret generic catalogue-user-pass --from-literal=password='catalogue_pass'
