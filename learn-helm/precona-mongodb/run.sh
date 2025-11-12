@@ -10,6 +10,7 @@ argocd app create psmdb-operator \
 --repo https://github.com/testVinaycicd/learn-tf.git \
 --path learn-helm/precona-mongodb  \
 --dest-server https://kubernetes.default.svc \
+--revision 1.16.1 \
 --dest-namespace default \
 --sync-policy automated --self-heal --auto-prune --revision main \
 --helm-set image.repository=percona/percona-server-mongodb-operator \
