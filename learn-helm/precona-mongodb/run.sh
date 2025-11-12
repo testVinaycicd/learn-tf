@@ -11,9 +11,7 @@ argocd app create psmdb-operator \
 --path learn-helm/precona-mongodb --revision 1.16.1 \
 --dest-server https://kubernetes.default.svc \
 --dest-namespace default \
---sync-policy automated --self-heal --auto-prune --revision main \
---helm-set image=percona/percona-server-mongodb-operator:1.16.1 \
---helm-set operatorImage=percona/percona-server-mongodb-operator:1.16.1
+--sync-policy automated --self-heal --auto-prune
 
 
 
