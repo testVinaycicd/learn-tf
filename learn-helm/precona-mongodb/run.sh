@@ -8,29 +8,11 @@ argocd login learn-argocd-dev.mikeydevops1.online --grpc-web --insecure --userna
 argocd app create psmdb-operator \
 --project default \
 --repo https://github.com/testVinaycicd/learn-tf.git \
---path learn-helm/precona-mongodb --revision 1.16.1 \
+--path learn-helm/precona-mongodb  \
 --dest-server https://kubernetes.default.svc \
 --dest-namespace default \
---sync-policy automated --self-heal --auto-prune
+--sync-policy automated --self-heal --auto-prune --revision main \
 
 
 
 # Cluster
-
-#argocd app create psmdb-operator \
-#  --upsert \
-#  --project default \
-#  --repo https://github.com/testVinaycicd/learn-tf.git \
-#  --path learn-helm/precona-mongodb psmdb-operator \
-#  --revision 1.16.1 \
-#  --dest-server https://kubernetes.default.svc \
-#  --dest-namespace default \
-#  --sync-policy automated --self-heal --auto-prune
-#
-#
-#helm upgrade --install psmdb-operator percona/psmdb-operator \
-#  --namespace default --create-namespace \
-#  --version 1.16.1 \
-#  --set image=percona/percona-server-mongodb-operator:1.16.1 \
-#  --set operatorImage=percona/percona-server-mongodb-operator:1.16.1 \
-#  --wait
