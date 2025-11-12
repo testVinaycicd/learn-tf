@@ -152,7 +152,7 @@ metadata:
 #  annotations:
 #    argocd.argoproj.io/sync-wave: "2"
 spec:
-  crVersion: 1.22.0
+  crVersion: 1.16.1
   # image = the mongod server image (not the operator)
   image: percona/percona-server-mongodb:6.0
 
@@ -199,7 +199,7 @@ spec:
   secrets:
     ssl: mongodb-ssl
     sslInternal: mongodb-ssl-internal
-    users: psmdb-users
+#    users: psmdb-users
 
 #  kubectl create secret generic catalogue-user-pass --from-literal=password='catalogue_pass'
 
