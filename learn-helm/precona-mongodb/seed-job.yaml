@@ -39,8 +39,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: cataloguedb-seed
-  annotations:
-    argocd.argoproj.io/sync-wave: "3"
+#  annotations:
+#    argocd.argoproj.io/sync-wave: "3"
 spec:
   backoffLimit: 0
   ttlSecondsAfterFinished: 300

@@ -80,8 +80,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: default
   name: percona-server-mongodb-operator
-  argocd.argoproj.io/sync-wave: "0"
+#  annotations:
+#    argocd.argoproj.io/sync-wave: "-1"
   labels:
     name: percona-server-mongodb-operator
     app.kubernetes.io/component: operator
@@ -147,8 +149,8 @@ kind: PerconaServerMongoDB
 metadata:
   name: mongodb
   namespace: default
-  annotations:
-    argocd.argoproj.io/sync-wave: "2"
+#  annotations:
+#    argocd.argoproj.io/sync-wave: "2"
 spec:
   crVersion: 1.22.0
   # image = the mongod server image (not the operator)
