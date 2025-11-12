@@ -186,15 +186,15 @@ spec:
           memory: "2Gi"
       expose:
         enabled: false # ClusterIP only
-  users:
-    - name: catalogue_user
-      db: admin
-      passwordSecretRef:
-        name: catalogue-user-pass     # K8s Secret containing key "password"
-        key: password
-      roles:
-        - db: catalogue
-          name: readWrite
+#  users:
+#    - name: catalogue_user
+#      db: admin
+#      passwordSecretRef:
+#        name: catalogue-user-pass     # K8s Secret containing key "password"
+#        key: password
+#      roles:
+#        - db: catalogue
+#          name: readWrite
 
   secrets:
     ssl: mongodb-ssl
