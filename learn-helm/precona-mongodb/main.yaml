@@ -77,6 +77,70 @@ spec:
     kind: Issuer
 
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: percona-server-mongodb-operator
+  argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    name: percona-server-mongodb-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/instance: percona-server-mongodb-operator
+    app.kubernetes.io/name: percona-server-mongodb-operator
+    app.kubernetes.io/part-of: percona-server-mongodb-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: percona-server-mongodb-operator
+  template:
+    metadata:
+      labels:
+        name: percona-server-mongodb-operator
+        app.kubernetes.io/component: operator
+        app.kubernetes.io/instance: percona-server-mongodb-operator
+        app.kubernetes.io/name: percona-server-mongodb-operator
+        app.kubernetes.io/part-of: percona-server-mongodb-operator
+    spec:
+      serviceAccountName: percona-server-mongodb-operator
+      containers:
+        - name: percona-server-mongodb-operator
+          image: perconalab/percona-server-mongodb-operator:main
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /metrics
+              port: metrics
+              scheme: HTTP
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: metrics
+          command:
+            - percona-server-mongodb-operator
+          env:
+            - name: LOG_STRUCTURED
+              value: 'false'
+            - name: LOG_LEVEL
+              value: INFO
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: percona-server-mongodb-operator
+            - name: RESYNC_PERIOD
+              value: 5s
+            - name: DISABLE_TELEMETRY
+              value: "false"
+            - name: MAX_CONCURRENT_RECONCILES
+              value: "1"
+---
 
 apiVersion: psmdb.percona.com/v1
 kind: PerconaServerMongoDB
@@ -165,3 +229,10 @@ spec:
 #      enabled: false
 #  monitoring:
 #      enabled: true
+
+#
+#  kubectl -n default get deploy psmdb-operator -o jsonpath='{.spec.template.spec.containers[0].image}'; echo
+#  kubectl get crd perconaservermongodbs.psmdb.percona.com -o jsonpath='{.spec.versions[*].name}'; echo
+#  kubectl get crd perconaservermongodbs.psmdb.percona.com -o yaml | yq '.spec.versions[].schema.openAPIV3Schema.properties.spec.properties | keys'
+#
+
