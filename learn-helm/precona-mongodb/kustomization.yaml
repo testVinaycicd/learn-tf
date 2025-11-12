@@ -9,6 +9,7 @@ resources:
   - main.yaml
   - storageclass.yaml
   - seed-job.yaml
+  - rbac.yaml
   # (add other YAMLs if you want)
 
 # 👇 this is the key part
