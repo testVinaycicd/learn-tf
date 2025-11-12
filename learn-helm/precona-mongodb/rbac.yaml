@@ -2,6 +2,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: percona-server-mongodb-operator
+  argocd.argoproj.io/sync-wave: "-1"
 rules:
   - apiGroups:
       - psmdb.percona.com
