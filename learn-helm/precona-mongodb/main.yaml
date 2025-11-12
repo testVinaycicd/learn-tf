@@ -152,12 +152,12 @@ metadata:
 #  annotations:
 #    argocd.argoproj.io/sync-wave: "2"
 spec:
-  crVersion: 1.16.1
+  crVersion: 1.17.0
   # image = the mongod server image (not the operator)
   image: percona/percona-server-mongodb:6.0
 
   # operatorImage = operator init-container image (use the stable operator tag you patched to)
-  operatorImage: percona/percona-server-mongodb-operator:1.16.1
+  operatorImage: percona/percona-server-mongodb-operator:1.17.0
 
   allowUnsafeConfigurations: false
   updateStrategy: RollingUpdate
