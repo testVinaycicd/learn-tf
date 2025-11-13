@@ -21,3 +21,12 @@ variable "vault_token" {
   sensitive = true
 
 }
+
+variable "env"{}
+variable "bastion_ssh_nodes" {}
+variable "db_instances"{}
+variable "zone_id" {}
+variable "kms_arn"{}
+
+variable "vpc" {}
+variable "default_vpc" {}

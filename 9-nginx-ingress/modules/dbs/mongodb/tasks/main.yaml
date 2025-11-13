@@ -1,0 +1,61 @@
+- name: copy mongodb repo (with gpgcheck enabled ideally)
+  ansible.builtin.copy:
+    src: mongod.repo
+    dest: /etc/yum.repos.d/mongo.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: ensure EPEL / python dependencies (if you later use community.mongodb modules)
+  ansible.builtin.dnf:
+    name:
+      - python3
+      - python3-pip
+    state: present
+
+- name: install mongodb package
+  ansible.builtin.dnf:
+    name: mongodb-org
+    state: present
+  notify: restart mongod
+
+- name: Replace local ip with global ip
+  ansible.builtin.replace:
+    path: /etc/mongod.conf
+    regexp: '127.0.0.1'
+    replace: '0.0.0.0'
+
+- name: ensure mongod is enabled and running
+  ansible.builtin.systemd:
+    name: mongod
+    enabled: yes
+    state: started
+
+- name: wait for mongod to be up
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 27017
+    timeout: 60
+
+- name: Create admin user (idempotent) — run only on the first host
+  ansible.builtin.shell: |
+    mongo admin --quiet --eval 'if (db.getUser("{{ mongo_admin_user }}") === null) { db.createUser({user:"{{ mongo_admin_user }}", pwd: "{{ mongo_admin_password }}", roles:[{role:"root", db:"admin"}]}); print("created") } else { print("exists") }'
+  args:
+    executable: /bin/bash
+  when: inventory_hostname == groups['mongo'][0]
+  register: create_admin
+  changed_when: "'created' in create_admin.stdout"
+
+- name: ensure SELinux boolean/mongo (optional, only if selinux enforced)
+  ansible.builtin.command: setsebool -P mongod_use_nfs 1
+  changed_when: "false"
+  # adjust SELinux / firewall rules according to your environment
+
+# Optional: open firewall rules (firewalld) only if necessary
+- name: open mongo port in firewalld (optional)
+  ansible.builtin.firewalld:
+    service: mysql  # DO NOT use; example only. Better define port
+    immediate: yes
+    permanent: yes
+    state: enabled
+  when: "false"
