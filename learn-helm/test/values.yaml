@@ -1,0 +1,23 @@
+image:
+  tag: latest
+
+replsets:
+  rs0:
+    size: 1
+    volumeSpec:
+      emptyDir: {}
+
+backup:
+  enabled: false
+
+sharding:
+  enabled: false
+
+users:
+  - name: appuser
+    db: myappdb
+    password: AppUserPassword!
+    roles:
+      - db: myappdb
+        name: readWrite
+
