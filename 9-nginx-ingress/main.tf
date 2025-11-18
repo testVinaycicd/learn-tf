@@ -40,7 +40,7 @@ module "vpc" {
 
 module "mongodb" {
   for_each = var.db_instances
-  source  = "modules/dbs"
+  source  = "./modules/dbs"
   depends_on = [module.vpc]
 
   ami_id = each.value["ami_id"]
