@@ -33,6 +33,7 @@ resource "aws_launch_template" "main" {
       volume_size = 20
       encrypted   = true
       # kms_key_id  = var.kms_arn
+
     }
   }
 
