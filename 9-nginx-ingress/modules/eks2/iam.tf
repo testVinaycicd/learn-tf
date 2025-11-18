@@ -74,9 +74,19 @@ resource "aws_iam_role_policy_attachment" "node_cni" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
+resource "aws_iam_instance_profile" "nodes" {
+  name = "${var.cluster_name}-node-instance-profile"
+  role = aws_iam_role.nodes.name
+}
+
+
 resource "aws_launch_template" "ng" {
   name_prefix = "${var.cluster_name}-ng-"
   vpc_security_group_ids = [aws_security_group.nodes.id]
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes.name
+  }
+
 }
 
 

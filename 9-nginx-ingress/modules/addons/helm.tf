@@ -24,7 +24,10 @@ resource "null_resource" "set-secret" {
   }
 }
 
-# resource "kubernetes_namespace" "ingress" {
+# resource "
+#
+#
+# kubernetes_namespace" "ingress" {
 #   depends_on = [null_resource.kubeconfig]
 #
 #   metadata { name = "ingress-nginx" }

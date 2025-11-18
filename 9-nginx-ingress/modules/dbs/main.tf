@@ -71,9 +71,9 @@ resource "null_resource" "main" {
   depends_on = [aws_route53_record.record]
 
   triggers = {
-    # instance_id_change = aws_instance.instance.id
-    always = timestamp()
+    instance_id_change = aws_instance.instance.id
   }
+
 
   provisioner "remote-exec" {
 
