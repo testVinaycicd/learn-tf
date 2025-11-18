@@ -153,73 +153,27 @@ resource "aws_iam_role" "cluster-autoscaler" {
   }
 }
 
-resource "aws_kms_key" "eks_ebs_key" {
-  description             = "EKS EBS CMK for encrypted root volumes"
-  deletion_window_in_days = 7
-  enable_key_rotation     = true
+# kms-grants.tf
+data "aws_caller_identity" "me" {}
 
-  policy = <<POLICY
-{
-  "Version":"2012-10-17",
-  "Id":"eks-key-policy-merged",
-  "Statement":[
-    {
-      "Sid":"AllowAccountAdministration",
-      "Effect":"Allow",
-      "Principal": { "AWS": "arn:aws:iam::8864-3695-8775:root" },
-      "Action":"kms:*",
-      "Resource":"*"
-    },
-    {
-      "Sid":"AllowServiceLinkedRoleAutoScalingUsage",
-      "Effect":"Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::8864-3695-8775:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
-      },
-      "Action":[
-        "kms:Encrypt",
-        "kms:Decrypt",
-        "kms:ReEncrypt*",
-        "kms:GenerateDataKey*",
-        "kms:DescribeKey"
-      ],
-      "Resource":"*"
-    },
-    {
-      "Sid":"AllowServiceLinkedRoleCreateGrant",
-      "Effect":"Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::8864-3695-8775:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
-      },
-      "Action":[ "kms:CreateGrant" ],
-      "Resource":"*",
-      "Condition":{
-        "Bool": { "kms:GrantIsForAWSResource": true }
-      }
-    },
-    {
-      "Sid":"AllowNodeInstanceRoleUse",
-      "Effect":"Allow",
-      "Principal": { "AWS": "${aws_iam_role.node-role.arn}" },
-      "Action":[
-        "kms:Encrypt",
-        "kms:Decrypt",
-        "kms:ReEncrypt*",
-        "kms:GenerateDataKey*",
-        "kms:DescribeKey",
-        "kms:CreateGrant"
-      ],
-      "Resource":"*"
-    }
-  ]
-}
-POLICY
+# grant for AutoScaling service-linked role so ASG/EKS can create encrypted volumes
+resource "aws_kms_grant" "asg_service_role" {
+  name              = "eks-asg-grant"
+  key_id            = var.kms_arn
+  grantee_principal = "arn:aws:iam::${data.aws_caller_identity.me.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+  operations        = ["Encrypt","Decrypt","GenerateDataKey","DescribeKey","ReEncryptFrom","ReEncryptTo"]
 }
 
-# optional alias for nicer referencing
-resource "aws_kms_alias" "eks_ebs_alias" {
-  name          = "alias/eks-ebs-cmk"
-  target_key_id = aws_kms_key.eks_ebs_key.key_id
+# grant for the node instance role (so EC2 can create & use encrypted volumes)
+resource "aws_kms_grant" "node_role" {
+  name              = "eks-node-role-grant"
+  key_id            = var.kms_arn
+  grantee_principal = aws_iam_role.node-role.arn   # uses your existing node role
+  operations        = ["Encrypt","Decrypt","GenerateDataKey","DescribeKey","ReEncryptFrom","ReEncryptTo"]
+  depends_on = [aws_iam_role.node-role]
 }
+
+
+
 
 #1082b02e-aba2-4c65-9bfd-2799fcdd513f
