@@ -41,7 +41,7 @@
     mongo admin --quiet --eval 'if (db.getUser("{{ mongo_admin_user }}") === null) { db.createUser({user:"{{ mongo_admin_user }}", pwd: "{{ mongo_admin_password }}", roles:[{role:"root", db:"admin"}]}); print("created") } else { print("exists") }'
   args:
     executable: /bin/bash
-  when: inventory_hostname == groups['mongo'][0]
+  when: inventory_hostname == (groups.get('mongo', [inventory_hostname])[0])
   register: create_admin
   changed_when: "'created' in create_admin.stdout"
 
@@ -53,7 +53,7 @@
 # Optional: open firewall rules (firewalld) only if necessary
 - name: open mongo port in firewalld (optional)
   ansible.builtin.firewalld:
-    service: mysql  # DO NOT use; example only. Better define port
+    service: mongod  # DO NOT use; example only. Better define port
     immediate: yes
     permanent: yes
     state: enabled
