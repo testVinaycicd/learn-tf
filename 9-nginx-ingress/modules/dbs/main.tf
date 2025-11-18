@@ -87,7 +87,10 @@ resource "null_resource" "main" {
     inline = [
       "sudo pip3.11 install ansible hvac",
       "sudo set-prompt check",
-      "ansible-pull -i localhost, -U https://github.com/testVinaycicd/learn-tf.git 9-nginx-ingress/modules/dbs/setup.yaml -e ansible_role=${var.name} -e env=${var.env} -e vault_token=${var.vault_token} --check",
+      # "ansible-pull -i localhost, -U https://github.com/testVinaycicd/learn-tf.git 9-nginx-ingress/modules/dbs/setup.yaml -e ansible_role=${var.name} -e env=${var.env} -e vault_token=${var.vault_token} --check",
+      "ansible-pull -i localhost, -U https://github.com/VinayBKrishna/roboshop-ansible.git -e component_name=${var.name} -e env=${var.env} roboshop.yml"
     ]
+
+
   }
 }
