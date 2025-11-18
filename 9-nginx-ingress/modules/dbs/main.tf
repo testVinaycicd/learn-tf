@@ -59,6 +59,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_db" {
 }
 
 resource "aws_route53_record" "record" {
+  depends_on = [aws_instance.instance]
   zone_id = var.zone_id
   name    = "${var.name}-${var.env}"
   type    = "A"
