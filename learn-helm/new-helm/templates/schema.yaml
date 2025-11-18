@@ -1,0 +1,20 @@
+{{ if .Values.schema.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.component_name }}-schema
+spec:
+  template:
+    spec:
+      containers:
+      - name: schema-load
+        image: {{ .Values.schema.image }}
+        command: ["mongosh", "mongodb://mongo-dev.mikeydevops1.online:27017/catalogue?authSource=admin", "/master-data.js"]
+        envFrom:
+          - configMapRef:
+              name: {{ .Values.component_name }}
+      restartPolicy: Never
+  backoffLimit: 4
+    {{ end }}
+

@@ -6,22 +6,22 @@ deployment:
 statefulset:
     enabled: false
 
-extraEnvFrom:
-    - secretRef:
-          name: pdbms-user-env
-
-env:
-    - name: MONGO_URL
-      value: >-
-          mongodb://catalogue_user:catalogue_pass@mongodb-rs0.default.svc.cluster.local:27017/catalogue?replicaSet=rs0&authSource=admin&directConnection=false
 
 
 replicas: 2
 
-configMapValues:
 
-    DB_TYPE: mongo
+configMapValues:
+    MONGO_URL: mongodb://mongo-dev.mikeydevops1.online:27017/catalogue
     MONGO: "true"
+schema:
+    image: crysis307/catalogue-db:latest
+    enabled: true
+    jobs:
+        - master-data
+    extention: js
+
+
 
 service:
     type: ClusterIP
