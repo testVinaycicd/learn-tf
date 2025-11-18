@@ -17,7 +17,6 @@
   ansible.builtin.dnf:
     name: mongodb-org
     state: present
-  notify: restart mongod
 
 - name: Replace local ip with global ip
   ansible.builtin.replace:
