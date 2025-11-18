@@ -76,7 +76,7 @@ resource "aws_eks_access_entry" "main" {
   for_each          = var.access
   cluster_name      = aws_eks_cluster.main.name
   principal_arn     = each.value["role"]
-  kubernetes_groups = each.value["kubernetes_groups"]
+ # kubernetes_groups = each.value["kubernetes_groups"]
   type              = "STANDARD"
 }
 
