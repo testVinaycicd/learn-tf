@@ -30,3 +30,4 @@ variable "kms_arn"{}
 
 variable "vpc" {}
 variable "default_vpc" {}
+variable "eks" {}

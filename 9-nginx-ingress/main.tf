@@ -10,17 +10,18 @@ module "vpc" {
   default_vpc = var.default_vpc
 
 }
-module "eks" {
-  source = "modules/eks2"
-  private_subnet_ids = module.vpc["main"].private_subnet_ids
-  vpc_id = module.vpc["main"].vpc_id
-  access = var.access
-  region = var.aws_region
-  private_rt_ids = module.vpc["main"].private_route_table_ids
-  addons = var.addons
-  env = "dev"
-}
 
+module "eks" {
+  for_each    = var.eks
+  source      = "./modules/eks"
+  env         = var.env
+  eks_version = each.value["eks_version"]
+  node_groups = each.value["node_groups"]
+  addons      = each.value["addons"]
+  access      = each.value["access"]
+  subnet_ids  = module.vpc["main"].subnets["app"]
+  kms_arn     = var.kms_arn
+}
 
 
 

@@ -50,7 +50,7 @@ db_instances = {
 }
 
 zone_id                = "Z09180393TY9K7UQDKE5E"
-vpc_security_group_ids = ["sg-0ea2a448676b70f53"]
+# vpc_security_group_ids = ["sg-0ea2a448676b70f53"]
 env                    = "dev"
 
 
@@ -139,6 +139,38 @@ access = {
   }
 }
 
-addons = {
-  eks-pod-identity-agent ={}
+
+eks = {
+  main = {
+    eks_version = 1.32
+    node_groups = {
+      main = {
+        min_nodes      = 1
+        max_nodes      = 10
+        instance_types = ["t3.medium"]
+        capacity_type  = "SPOT"
+      }
+    }
+
+    addons = {
+      #metrics-server = {}
+      eks-pod-identity-agent = {}
+    }
+
+    access = {
+      workstation = {
+        role                    = "arn:aws:iam::633788536644:role/workstation-role"
+        policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+        access_scope_type       = "cluster"
+        access_scope_namespaces = []
+      }
+      github_runner = {
+        role                    = "arn:aws:iam::886436958775:role/github-runner-role"
+        policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+        access_scope_type       = "cluster"
+        access_scope_namespaces = []
+      }
+    }
+
+  }
 }
