@@ -150,7 +150,7 @@ eks = {
         min_nodes      = 1
         max_nodes      = 10
         instance_types = ["t3.medium"]
-        capacity_type  = "SPOT"
+        capacity_type  = "ON_DEMAND"
       }
     }
 
