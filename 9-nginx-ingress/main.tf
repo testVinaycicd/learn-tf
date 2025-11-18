@@ -12,11 +12,11 @@ module "vpc" {
 }
 module "eks" {
   source = "./modules/eks"
-  private_subnet_ids = module.vpc.private_subnet_ids
-  vpc_id = module.vpc.vpc_id
+  private_subnet_ids = module.vpc["main"].private_subnet_ids
+  vpc_id = module.vpc["main"].vpc_id
   access = var.access
   region = var.aws_region
-  private_rt_ids = module.vpc.private_route_table_ids
+  private_rt_ids = module.vpc["main"].private_route_table_ids
   addons = var.addons
 }
 
