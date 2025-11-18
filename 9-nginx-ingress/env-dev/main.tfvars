@@ -1,7 +1,7 @@
 
 db_instances = {
 
-  mongodb = {
+  mongo = {
     ami_id           = "ami-09c813fb71547fc4f"
     instance_type    = "t3.small"
     root_volume_size = 20
