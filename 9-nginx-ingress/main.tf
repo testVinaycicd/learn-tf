@@ -38,28 +38,28 @@ module "vpc" {
 #
 # }
 
-# module "mongodb" {
-#   for_each = var.db_instances
-#   source  = "modules/dbs"
-#   depends_on = [module.vpc]
-#
-#   ami_id = each.value["ami_id"]
-#   env = var.env
-#   instance_type = each.value["instance_type"]
-#   name = each.key
-#   zone_id = var.zone_id
-#   vault_token = var.vault_token
-#   ansible_role = lookup(each.value,"ansible_role",each.key )
-#   root_volume_size = each.value["root_volume_size"]
-#   subnet_ids =  module.vpc["main"].subnets["db"]
-#   vpc_id = module.vpc["main"].vpc["id"]
-#   bastion_ssh_nodes = var.bastion_ssh_nodes
-#   app_cidr = each.value["app_cidr"]
-#   port = each.value["port"]
-#   kms_arn = var.kms_arn
-#
-#   # vpc_id = module.vpc.vpc_id
-#   # eks_nodes_sg_id = module.eks.eks_sg_id
-#   # private_subnet_ids = module.vpc.private_subnet_ids
-#
-# }
+module "mongodb" {
+  for_each = var.db_instances
+  source  = "modules/dbs"
+  depends_on = [module.vpc]
+
+  ami_id = each.value["ami_id"]
+  env = var.env
+  instance_type = each.value["instance_type"]
+  name = each.key
+  zone_id = var.zone_id
+  vault_token = var.vault_token
+  ansible_role = lookup(each.value,"ansible_role",each.key )
+  root_volume_size = each.value["root_volume_size"]
+  subnet_ids =  module.vpc["main"].subnets["db"]
+  vpc_id = module.vpc["main"].vpc["id"]
+  bastion_ssh_nodes = var.bastion_ssh_nodes
+  app_cidr = each.value["app_cidr"]
+  port = each.value["port"]
+  kms_arn = var.kms_arn
+
+  # vpc_id = module.vpc.vpc_id
+  # eks_nodes_sg_id = module.eks.eks_sg_id
+  # private_subnet_ids = module.vpc.private_subnet_ids
+
+}
