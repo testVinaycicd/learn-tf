@@ -1,98 +1,88 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.81.0"
+resource "aws_eks_cluster" "main" {
+  name = var.env
+
+  access_config {
+    authentication_mode                         = "API"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
+  role_arn = aws_iam_role.cluster-role.arn
+  version  = var.eks_version
+
+  vpc_config {
+    subnet_ids = var.subnet_ids
+  }
+
+  # This is not needed for us as we dont use local secrets, We are using all secrets from vault.
+  encryption_config {
+    resources = ["secrets"]
+    provider {
+      key_arn = var.kms_arn
+    }
+  }
+}
+
+resource "aws_launch_template" "main" {
+  for_each = var.node_groups
+  name     = each.key
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size = 20
+      encrypted   = true
+      kms_key_id  = var.kms_arn
     }
   }
 
 }
 
-provider "aws" {
-  region = var.region
-}
-
-resource "aws_eks_addon" "addons" {
-  for_each = var.addons
-  cluster_name = aws_eks_cluster.this.name
-  addon_name   = each.key
-}
-
-data "http" "myip" {
-  url = "https://checkip.amazonaws.com/"
-}
-
-# --- EKS Cluster (EKS will create & wire SGs automatically) ---
-resource "aws_eks_cluster" "this" {
-  name     = var.cluster_name
-  role_arn = aws_iam_role.eks.arn
-  version  = var.kubernetes_version
-
-
-  vpc_config {
-    subnet_ids               = var.private_subnet_ids
-    endpoint_private_access  = true
-    endpoint_public_access   = true
-    public_access_cidrs     = ["${chomp(data.http.myip.response_body)}/32"]
-  }
-
-
-  access_config {
-    authentication_mode                           = "API"
-    bootstrap_cluster_creator_admin_permissions   = true
-  }
-
-  depends_on = [aws_iam_role_policy_attachment.eks_cluster_policy]
-}
-
-# --- Managed Node Group (EKS chooses AL2023 by default) ---
-resource "aws_eks_node_group" "default" {
-  cluster_name   = aws_eks_cluster.this.name
-  node_role_arn  = aws_iam_role.nodes.arn
-  subnet_ids     = var.private_subnet_ids
-  instance_types = [var.node_instance_type]
-
-  scaling_config {
-    desired_size = 3
-    min_size     = 2
-    max_size     = 10
-  }
+resource "aws_eks_node_group" "main" {
+  for_each        = var.node_groups
+  cluster_name    = aws_eks_cluster.main.name
+  node_group_name = each.key
+  node_role_arn   = aws_iam_role.node-role.arn
+  subnet_ids      = var.subnet_ids
+  instance_types  = each.value["instance_types"]
+  capacity_type   = each.value["capacity_type"]
 
   launch_template {
-    id = aws_launch_template.ng.id
+    name    = aws_launch_template.main[each.key].name
     version = "$Latest"
   }
 
-  capacity_type = "ON_DEMAND" # keep simple/reliable for first bring-up
+  scaling_config {
+    desired_size = each.value["min_nodes"]
+    max_size     = each.value["max_nodes"]
+    min_size     = each.value["min_nodes"]
+  }
 
-  update_config { max_unavailable = 1 }
+  lifecycle {
+    ignore_changes = [scaling_config]
+  }
 
-  depends_on = [
-    aws_eks_cluster.this,
-    aws_iam_role_policy_attachment.node_eks_worker,
-    aws_iam_role_policy_attachment.node_ecr_readonly,
-    aws_iam_role_policy_attachment.node_cni
-  ]
+}
 
 
-
+resource "aws_eks_addon" "addons" {
+  for_each     = var.addons
+  cluster_name = aws_eks_cluster.main.name
+  addon_name   = each.key
 }
 
 
 resource "aws_eks_access_entry" "main" {
   for_each          = var.access
-  cluster_name      = aws_eks_cluster.this.name
+  cluster_name      = aws_eks_cluster.main.name
   principal_arn     = each.value["role"]
+  kubernetes_groups = each.value["kubernetes_groups"]
   type              = "STANDARD"
 }
 
-
-
-
-# giving access policy for other roles
 resource "aws_eks_access_policy_association" "main" {
   for_each      = var.access
-  cluster_name  = aws_eks_cluster.this.name
+  cluster_name  = aws_eks_cluster.main.name
   policy_arn    = each.value["policy_arn"]
   principal_arn = each.value["role"]
 
@@ -100,4 +90,25 @@ resource "aws_eks_access_policy_association" "main" {
     type       = each.value["access_scope_type"]
     namespaces = each.value["access_scope_namespaces"]
   }
+}
+
+resource "aws_eks_pod_identity_association" "external-dns" {
+  cluster_name    = aws_eks_cluster.main.name
+  namespace       = "default"
+  service_account = "external-dns"
+  role_arn        = aws_iam_role.external-dns.arn
+}
+
+resource "aws_eks_pod_identity_association" "k8s-kubernetes" {
+  cluster_name    = aws_eks_cluster.main.name
+  namespace       = "default"
+  service_account = "kube-prom-stack-kube-prome-prometheus"
+  role_arn        = aws_iam_role.k8s-prometheus.arn
+}
+
+resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
+  cluster_name    = aws_eks_cluster.main.name
+  namespace       = "kube-system"
+  service_account = "cluster-autoscaler-aws-cluster-autoscaler"
+  role_arn        = aws_iam_role.cluster-autoscaler.arn
 }
