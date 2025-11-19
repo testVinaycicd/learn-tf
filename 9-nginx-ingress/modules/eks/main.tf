@@ -14,12 +14,12 @@ resource "aws_eks_cluster" "main" {
   }
 
   # This is not needed for us as we dont use local secrets, We are using all secrets from vault.
-  encryption_config {
-    resources = ["secrets"]
-    provider {
-      key_arn = var.kms_arn
-    }
-  }
+  # encryption_config {
+  #   resources = ["secrets"]
+  #   provider {
+  #     key_arn = var.kms_arn
+  #   }
+  # }
 }
 
 resource "aws_launch_template" "main" {
@@ -27,13 +27,14 @@ resource "aws_launch_template" "main" {
   name     = each.key
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = "/dev/sda1"
 
     ebs {
       volume_size = 20
-      encrypted   = true
+      # encrypted   = true
       # kms_key_id  = var.kms_arn
 
+      # kms_key_id  = aws_kms_key.eks_nodes.arn
     }
   }
 
