@@ -32,6 +32,10 @@ resource "aws_launch_template" "main" {
   for_each = var.node_groups
   name     = each.key
 
+  iam_instance_profile {
+    name = aws_iam_instance_profile.node_instance_profile.name
+  }
+
   block_device_mappings {
     device_name = "/dev/xvda"
 
@@ -43,7 +47,9 @@ resource "aws_launch_template" "main" {
       # kms_key_id  = aws_kms_key.eks_nodes.arn
     }
   }
-
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_eks_node_group" "main" {
@@ -118,5 +124,5 @@ resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
   cluster_name    = aws_eks_cluster.main.name
   namespace       = "kube-system"
   service_account = "cluster-autoscaler-aws-cluster-autoscaler"
-  role_arn        = aws_iam_role.cluster-autoscaler.arn
+  role_arn        = aws_iam_role.cluster_autoscaler.arn
 }

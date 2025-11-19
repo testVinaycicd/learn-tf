@@ -24,6 +24,15 @@ resource "null_resource" "set-secret" {
   }
 }
 
+
+resource "null_resource" "metrics-server" {
+  depends_on = [null_resource.kubeconfig]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+  }
+}
+
 # resource "
 #
 #
@@ -313,3 +322,21 @@ resource "helm_release" "kube-prometheus-stack" {
 #
 #
 # }
+resource "helm_release" "cluster-autoscaler" {
+
+  depends_on = [null_resource.kubeconfig]
+  name       = "cluster-autoscaler"
+  repository = "https://kubernetes.github.io/autoscaler"
+  chart      = "cluster-autoscaler"
+  namespace  = "kube-system"
+  wait       = "false"
+
+  set {
+    name  = "autoDiscovery.clusterName"
+    value = var.cluster_name
+  }
+  set {
+    name  = "awsRegion"
+    value = "us-east-1"
+  }
+}

@@ -52,6 +52,11 @@ resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOn
   role       = aws_iam_role.node-role.name
 }
 
+resource "aws_iam_instance_profile" "node_instance_profile" {
+  name = "${var.env}-eks-node-instance-profile"
+  role = aws_iam_role.node-role.name
+}
+
 resource "aws_iam_role" "external-dns" {
   name = "${var.env}-eks-external-dns-role"
   assume_role_policy = jsonencode({
@@ -101,17 +106,70 @@ resource "aws_iam_role_policy_attachment" "k8s-prometheus-ec2-read-access" {
   role       = aws_iam_role.k8s-prometheus.name
 }
 
-resource "aws_iam_role" "cluster-autoscaler" {
+# resource "aws_iam_role" "cluster-autoscaler" {
+#   name = "${var.env}-eks-cluster-autoscaler-role"
+#   assume_role_policy = jsonencode({
+#     "Version" : "2012-10-17",
+#     "Statement" : [
+#       {
+#         "Effect" : "Allow",
+#         "Principal" : {
+#           "Service" : "pods.eks.amazonaws.com"
+#         },
+#         "Action" : [
+#           "sts:AssumeRole",
+#           "sts:TagSession"
+#         ]
+#       }
+#     ]
+#   })
+#
+#   inline_policy {
+#     name = "${var.env}-eks-cluster-autoscaler-inline-policy"
+#
+#     policy = jsonencode({
+#       "Version" : "2012-10-17",
+#       "Statement" : [
+#         {
+#           "Effect" : "Allow",
+#           "Action" : [
+#             "autoscaling:DescribeAutoScalingGroups",
+#             "autoscaling:DescribeAutoScalingInstances",
+#             "autoscaling:DescribeLaunchConfigurations",
+#             "autoscaling:DescribeScalingActivities",
+#             "ec2:DescribeImages",
+#             "ec2:DescribeInstanceTypes",
+#             "ec2:DescribeLaunchTemplateVersions",
+#             "ec2:GetInstanceTypesFromInstanceRequirements",
+#             "eks:DescribeNodegroup"
+#           ],
+#           "Resource" : ["*"]
+#         },
+#         {
+#           "Effect" : "Allow",
+#           "Action" : [
+#             "autoscaling:SetDesiredCapacity",
+#             "autoscaling:TerminateInstanceInAutoScalingGroup"
+#           ],
+#           "Resource" : ["*"]
+#         }
+#       ]
+#     })
+#   }
+# }
+
+resource "aws_iam_role" "cluster_autoscaler" {
   name = "${var.env}-eks-cluster-autoscaler-role"
+
   assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
+    Version = "2012-10-17"
+    Statement = [
       {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "pods.eks.amazonaws.com"
-        },
-        "Action" : [
+        Effect = "Allow"
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+        Action = [
           "sts:AssumeRole",
           "sts:TagSession"
         ]
@@ -119,38 +177,11 @@ resource "aws_iam_role" "cluster-autoscaler" {
     ]
   })
 
-  inline_policy {
-    name = "${var.env}-eks-cluster-autoscaler-inline-policy"
+}
 
-    policy = jsonencode({
-      "Version" : "2012-10-17",
-      "Statement" : [
-        {
-          "Effect" : "Allow",
-          "Action" : [
-            "autoscaling:DescribeAutoScalingGroups",
-            "autoscaling:DescribeAutoScalingInstances",
-            "autoscaling:DescribeLaunchConfigurations",
-            "autoscaling:DescribeScalingActivities",
-            "ec2:DescribeImages",
-            "ec2:DescribeInstanceTypes",
-            "ec2:DescribeLaunchTemplateVersions",
-            "ec2:GetInstanceTypesFromInstanceRequirements",
-            "eks:DescribeNodegroup"
-          ],
-          "Resource" : ["*"]
-        },
-        {
-          "Effect" : "Allow",
-          "Action" : [
-            "autoscaling:SetDesiredCapacity",
-            "autoscaling:TerminateInstanceInAutoScalingGroup"
-          ],
-          "Resource" : ["*"]
-        }
-      ]
-    })
-  }
+resource "aws_iam_role_policy_attachment" "cluster-autoscaler-policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAutoscalerPolicy"
+  role       = aws_iam_role.cluster_autoscaler.name
 }
 
 # kms-grants.tf
