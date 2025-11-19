@@ -123,43 +123,22 @@ data "aws_eks_cluster_auth" "cluster" {
   name = aws_eks_cluster.this.name
 }
 
-# Build mapRoles for aws-auth: node role + any access roles passed in var.access
-locals {
-  map_roles = concat(
-    [
-      {
-        rolearn  = aws_iam_role.node_role.arn
-        username = "system:node:{{EC2PrivateDNSName}}"
-        groups   = ["system:bootstrappers", "system:nodes"]
-      }
-    ],
-    [
-      for k, v in var.access :
-      {
-        rolearn  = lookup(v, "role", "")
-        username = "admin"
-        groups   = ["system:masters"]
-      }
-      if lookup(v, "role", "") != ""
-    ]
-  )
+resource "aws_eks_access_entry" "main" {
+  for_each          = var.access
+  cluster_name      = aws_eks_cluster.this.name
+  principal_arn     = each.value["role"]
+  # kubernetes_groups = each.value["kubernetes_groups"]
+  type              = "STANDARD"
 }
 
+resource "aws_eks_access_policy_association" "main" {
+  for_each      = var.access
+  cluster_name  = aws_eks_cluster.this.name
+  policy_arn    = each.value["policy_arn"]
+  principal_arn = each.value["role"]
 
-
-# Create / manage the aws-auth configmap so nodes + admin roles can access the cluster
-resource "kubernetes_config_map" "aws_auth" {
-  metadata {
-    name      = "aws-auth"
-    namespace = "kube-system"
+  access_scope {
+    type       = each.value["access_scope_type"]
+    namespaces = each.value["access_scope_namespaces"]
   }
-
-  data = {
-    mapRoles = yamlencode(local.map_roles)
-  }
-
-  # ensure cluster + nodegroup finished creating before managing aws-auth
-  depends_on = [
-    aws_eks_node_group.node_groups
-  ]
 }
