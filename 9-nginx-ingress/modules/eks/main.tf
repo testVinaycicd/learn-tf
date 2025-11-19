@@ -1,3 +1,5 @@
+
+
 resource "aws_eks_cluster" "main" {
   name = var.env
 
@@ -11,6 +13,10 @@ resource "aws_eks_cluster" "main" {
 
   vpc_config {
     subnet_ids = var.subnet_ids
+    endpoint_private_access = true
+    endpoint_public_access  = true           # ← ADD THIS LINE
+    public_access_cidrs     = ["${chomp(data.http.myip.response_body)}/32"] # ← AND THIS (or restrict to your IP)
+
   }
 
   # This is not needed for us as we dont use local secrets, We are using all secrets from vault.
@@ -78,7 +84,7 @@ resource "aws_eks_access_entry" "main" {
   for_each          = var.access
   cluster_name      = aws_eks_cluster.main.name
   principal_arn     = each.value["role"]
- # kubernetes_groups = each.value["kubernetes_groups"]
+  kubernetes_groups = each.value["kubernetes_groups"]
   type              = "STANDARD"
 }
 
