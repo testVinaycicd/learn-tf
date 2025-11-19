@@ -13,6 +13,8 @@ resource "aws_eks_cluster" "main" {
     subnet_ids = var.subnet_ids
   }
 
+
+
   # This is not needed for us as we dont use local secrets, We are using all secrets from vault.
   # encryption_config {
   #   resources = ["secrets"]
@@ -22,23 +24,50 @@ resource "aws_eks_cluster" "main" {
   # }
 }
 
-resource "aws_launch_template" "main" {
-  for_each = var.node_groups
-  name     = each.key
+# resource "aws_launch_template" "main" {
+#   for_each = var.node_groups
+#   name     = each.key
+#
+#   block_device_mappings {
+#     device_name = "/dev/xvda"
+#
+#     ebs {
+#       volume_size = 20
+#       encrypted   = true
+#       # kms_key_id  = var.kms_arn
+#
+#       kms_key_id  = aws_kms_key.eks_nodes.arn
+#     }
+#   }
+#
+# }
 
-  block_device_mappings {
-    device_name = "/dev/xvda"
-
-    ebs {
-      volume_size = 20
-      encrypted   = true
-      # kms_key_id  = var.kms_arn
-
-      kms_key_id  = aws_kms_key.eks_nodes.arn
-    }
-  }
-
-}
+# resource "aws_eks_node_group" "main" {
+#   for_each        = var.node_groups
+#   cluster_name    = aws_eks_cluster.main.name
+#   node_group_name = each.key
+#   node_role_arn   = aws_iam_role.node-role.arn
+#   subnet_ids      = var.subnet_ids
+#   instance_types  = each.value["instance_types"]
+#   capacity_type   = each.value["capacity_type"]
+#
+#   # launch_template {
+#   #   name    = aws_launch_template.main[each.key].name
+#   #   version = "$Latest"
+#   # }
+#
+#   scaling_config {
+#     desired_size = each.value["min_nodes"]
+#     max_size     = each.value["max_nodes"]
+#     min_size     = each.value["min_nodes"]
+#   }
+#
+#
+#   lifecycle {
+#     ignore_changes = [scaling_config]
+#   }
+#
+# }
 
 resource "aws_eks_node_group" "main" {
   for_each        = var.node_groups
@@ -49,23 +78,51 @@ resource "aws_eks_node_group" "main" {
   instance_types  = each.value["instance_types"]
   capacity_type   = each.value["capacity_type"]
 
-  launch_template {
-    name    = aws_launch_template.main[each.key].name
-    version = "$Latest"
-  }
+  # Root volume size
+  disk_size = 50   # or whatever you want
 
   scaling_config {
-    desired_size = each.value["min_nodes"]
-    max_size     = each.value["max_nodes"]
-    min_size     = each.value["min_nodes"]
+    desired_size = each.value["desired_size"]
+    min_size     = each.value["min_size"]
+    max_size     = each.value["max_size"]
+  }
+
+  # THIS IS THE MAGIC PART – minimal launch template just for KMS
+  launch_template {
+    id      = aws_launch_template.kms_only[each.key].id
+    version = aws_launch_template.kms_only[each.key].latest_version
   }
 
   lifecycle {
     ignore_changes = [scaling_config]
   }
-
 }
 
+# Very small launch template – only for KMS encryption
+resource "aws_launch_template" "kms_only" {
+  for_each = var.node_groups
+
+  name = "${var.env}-${each.key}-kms"
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size           = 20
+      encrypted             = true
+      kms_key_id            = var.kms_arn   # your custom key
+      delete_on_termination = true
+    }
+  }
+
+  # DO NOT add user_data here → let EKS inject the correct bootstrap script automatically
+  # (this is the key point – EKS does it for you when you don’t override user_data)
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+}
 
 resource "aws_eks_addon" "addons" {
   for_each     = var.addons
