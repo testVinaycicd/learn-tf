@@ -1,6 +1,6 @@
 locals {
   cluster_name = "eks-${var.env}"
-  merged_tags  =  var.env
+
 }
 
 # IAM role for the EKS control plane
@@ -15,7 +15,7 @@ resource "aws_iam_role" "eks_cluster" {
     }]
   })
 
-  tags = local.merged_tags
+  tags = var.env
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_attach" {
@@ -35,7 +35,7 @@ resource "aws_iam_role" "node_role" {
     }]
   })
 
-  tags = local.merged_tags
+  tags = var.env
 }
 
 resource "aws_iam_role_policy_attachment" "node_AmazonEKSWorkerNodePolicy" {
@@ -64,7 +64,7 @@ resource "aws_eks_cluster" "this" {
     public_access_cidrs     = ["0.0.0.0/0"]
   }
 
-  tags = local.merged_tags
+  tags =  var.env
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_attach
@@ -77,7 +77,7 @@ resource "aws_eks_addon" "addons" {
   cluster_name = aws_eks_cluster.this.name
   addon_name   = each.key
   # version left to default/latest — you can pass more info in var.addons value if needed
-  tags = local.merged_tags
+  tags =  var.env
   depends_on = [aws_eks_cluster.this]
 }
 
@@ -99,7 +99,7 @@ resource "aws_eks_node_group" "node_groups" {
   instance_types = lookup(each.value, "instance_types", ["t3.medium"])
   capacity_type  = lookup(each.value, "capacity_type", "ON_DEMAND")
 
-  tags = merge(local.merged_tags, { "eks:nodegroup" = each.key })
+  tags = merge( var.env, { "eks:nodegroup" = each.key })
 
   lifecycle {
     create_before_destroy = true
