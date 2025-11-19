@@ -32,9 +32,6 @@ resource "aws_launch_template" "main" {
   for_each = var.node_groups
   name     = each.key
 
-  iam_instance_profile {
-    name = aws_iam_instance_profile.node_instance_profile.name
-  }
 
   block_device_mappings {
     device_name = "/dev/xvda"
@@ -60,6 +57,7 @@ resource "aws_eks_node_group" "main" {
   subnet_ids      = var.subnet_ids
   instance_types  = each.value["instance_types"]
   capacity_type   = each.value["capacity_type"]
+
 
   launch_template {
     name    = aws_launch_template.main[each.key].name

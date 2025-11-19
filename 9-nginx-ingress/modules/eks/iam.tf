@@ -159,7 +159,7 @@ resource "aws_iam_role_policy_attachment" "k8s-prometheus-ec2-read-access" {
 # }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  name = "${var.env}-eks-cluster-autoscaler-role"
+  name = "${var.env}-eks-cluster-autoscaler-role-new"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
