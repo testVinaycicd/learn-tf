@@ -106,17 +106,19 @@ resource "aws_iam_role_policy_attachment" "k8s-prometheus-ec2-read-access" {
   role       = aws_iam_role.k8s-prometheus.name
 }
 
-# resource "aws_iam_role" "cluster-autoscaler" {
-#   name = "${var.env}-eks-cluster-autoscaler-role"
+
+# resource "aws_iam_role" "cluster_autoscaler" {
+#   name = "${var.env}-eks-cluster-autoscaler-role-new"
+#
 #   assume_role_policy = jsonencode({
-#     "Version" : "2012-10-17",
-#     "Statement" : [
+#     Version = "2012-10-17"
+#     Statement = [
 #       {
-#         "Effect" : "Allow",
-#         "Principal" : {
-#           "Service" : "pods.eks.amazonaws.com"
-#         },
-#         "Action" : [
+#         Effect = "Allow"
+#         Principal = {
+#           Service = "pods.eks.amazonaws.com"
+#         }
+#         Action = [
 #           "sts:AssumeRole",
 #           "sts:TagSession"
 #         ]
@@ -124,87 +126,14 @@ resource "aws_iam_role_policy_attachment" "k8s-prometheus-ec2-read-access" {
 #     ]
 #   })
 #
-#   inline_policy {
-#     name = "${var.env}-eks-cluster-autoscaler-inline-policy"
+# }
 #
-#     policy = jsonencode({
-#       "Version" : "2012-10-17",
-#       "Statement" : [
-#         {
-#           "Effect" : "Allow",
-#           "Action" : [
-#             "autoscaling:DescribeAutoScalingGroups",
-#             "autoscaling:DescribeAutoScalingInstances",
-#             "autoscaling:DescribeLaunchConfigurations",
-#             "autoscaling:DescribeScalingActivities",
-#             "ec2:DescribeImages",
-#             "ec2:DescribeInstanceTypes",
-#             "ec2:DescribeLaunchTemplateVersions",
-#             "ec2:GetInstanceTypesFromInstanceRequirements",
-#             "eks:DescribeNodegroup"
-#           ],
-#           "Resource" : ["*"]
-#         },
-#         {
-#           "Effect" : "Allow",
-#           "Action" : [
-#             "autoscaling:SetDesiredCapacity",
-#             "autoscaling:TerminateInstanceInAutoScalingGroup"
-#           ],
-#           "Resource" : ["*"]
-#         }
-#       ]
-#     })
-#   }
+# resource "aws_iam_role_policy_attachment" "cluster-autoscaler-policy" {
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAutoscalerPolicy"
+#   role       = aws_iam_role.cluster_autoscaler.name
 # }
 
-resource "aws_iam_role" "cluster_autoscaler" {
-  name = "${var.env}-eks-cluster-autoscaler-role-new"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "pods.eks.amazonaws.com"
-        }
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-      }
-    ]
-  })
-
-}
-
-resource "aws_iam_role_policy_attachment" "cluster-autoscaler-policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAutoscalerPolicy"
-  role       = aws_iam_role.cluster_autoscaler.name
-}
-
-# kms-grants.tf
-data "aws_caller_identity" "me" {}
-
-# grant for AutoScaling service-linked role so ASG/EKS can create encrypted volumes
-resource "aws_kms_grant" "asg_service_role" {
-  name              = "eks-asg-grant"
-  key_id            = var.kms_arn
-  grantee_principal = "arn:aws:iam::${data.aws_caller_identity.me.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
-  operations        = ["Encrypt","Decrypt","GenerateDataKey","DescribeKey","ReEncryptFrom","ReEncryptTo"]
-}
-
-# grant for the node instance role (so EC2 can create & use encrypted volumes)
-resource "aws_kms_grant" "node_role" {
-  name              = "eks-node-role-grant"
-  key_id            = var.kms_arn
-  grantee_principal = aws_iam_role.node-role.arn   # uses your existing node role
-  operations        = ["Encrypt","Decrypt","GenerateDataKey","DescribeKey","ReEncryptFrom","ReEncryptTo"]
-  depends_on = [aws_iam_role.node-role]
-}
 
 
 
 
-#1082b02e-aba2-4c65-9bfd-2799fcdd513f

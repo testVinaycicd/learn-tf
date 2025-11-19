@@ -19,13 +19,6 @@ resource "aws_eks_cluster" "main" {
 
   }
 
-  # This is not needed for us as we dont use local secrets, We are using all secrets from vault.
-  # encryption_config {
-  #   resources = ["secrets"]
-  #   provider {
-  #     key_arn = var.kms_arn
-  #   }
-  # }
 }
 
 resource "aws_launch_template" "main" {
@@ -33,20 +26,20 @@ resource "aws_launch_template" "main" {
   name     = each.key
 
 
-  block_device_mappings {
-    device_name = "/dev/xvda"
-
-    ebs {
-      volume_size = 20
-      # encrypted   = true
-      # # kms_key_id  = var.kms_arn
-      #
-      # kms_key_id  = aws_kms_key.eks_nodes.arn
-    }
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
+  # block_device_mappings {
+  #   device_name = "/dev/xvda"
+  #
+  #   ebs {
+  #     volume_size = 20
+  #     # encrypted   = true
+  #     # # kms_key_id  = var.kms_arn
+  #     #
+  #     # kms_key_id  = aws_kms_key.eks_nodes.arn
+  #   }
+  # }
+  # lifecycle {
+  #   create_before_destroy = true
+  # }
 }
 
 resource "aws_eks_node_group" "main" {
@@ -104,23 +97,23 @@ resource "aws_eks_access_policy_association" "main" {
   }
 }
 
-resource "aws_eks_pod_identity_association" "external-dns" {
-  cluster_name    = aws_eks_cluster.main.name
-  namespace       = "default"
-  service_account = "external-dns"
-  role_arn        = aws_iam_role.external-dns.arn
-}
+# resource "aws_eks_pod_identity_association" "external-dns" {
+#   cluster_name    = aws_eks_cluster.main.name
+#   namespace       = "default"
+#   service_account = "external-dns"
+#   role_arn        = aws_iam_role.external-dns.arn
+# }
 
-resource "aws_eks_pod_identity_association" "k8s-kubernetes" {
-  cluster_name    = aws_eks_cluster.main.name
-  namespace       = "default"
-  service_account = "kube-prom-stack-kube-prome-prometheus"
-  role_arn        = aws_iam_role.k8s-prometheus.arn
-}
+# resource "aws_eks_pod_identity_association" "k8s-kubernetes" {
+#   cluster_name    = aws_eks_cluster.main.name
+#   namespace       = "default"
+#   service_account = "kube-prom-stack-kube-prome-prometheus"
+#   role_arn        = aws_iam_role.k8s-prometheus.arn
+# }
 
-resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
-  cluster_name    = aws_eks_cluster.main.name
-  namespace       = "kube-system"
-  service_account = "cluster-autoscaler-aws-cluster-autoscaler"
-  role_arn        = aws_iam_role.cluster_autoscaler.arn
-}
+# resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
+#   cluster_name    = aws_eks_cluster.main.name
+#   namespace       = "kube-system"
+#   service_account = "cluster-autoscaler-aws-cluster-autoscaler"
+#   role_arn        = aws_iam_role.cluster_autoscaler.arn
+# }

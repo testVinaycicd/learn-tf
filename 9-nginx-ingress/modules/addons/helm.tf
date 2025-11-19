@@ -340,3 +340,18 @@ resource "helm_release" "cluster-autoscaler" {
     value = "us-east-1"
   }]
 }
+
+resource "helm_release" "wave-config-reloader" {
+
+  depends_on = [null_resource.kubeconfig]
+  name       = "wave"
+  repository = "https://wave-k8s.github.io/wave/"
+  chart      = "wave"
+  namespace  = "kube-system"
+  wait       = "false"
+
+  set=[ {
+    name  = "webhooks.enabled"
+    value = true
+  }]
+}
