@@ -1,5 +1,11 @@
 
+data "http" "my_ip" {
+  url = "https://checkip.amazonaws.com"
+}
 
+locals {
+  my_ip_cidr = "${trimspace(data.http.my_ip.body)}/32"
+}
 # ---------- Security Groups ----------
 resource "aws_security_group" "alb" {
   name        = "${var.name}-alb-sg"
@@ -11,7 +17,7 @@ resource "aws_security_group" "alb" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [local.my_ip_cidr]
   }
 
   ingress {
@@ -19,7 +25,7 @@ resource "aws_security_group" "alb" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [local.my_ip_cidr]
   }
 
 
