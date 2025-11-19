@@ -1,6 +1,6 @@
 locals {
-  cluster_name = var.name != null ? var.name : "eks-${var.env}"
-  merged_tags  = merge({ Name = local.cluster_name, Env = var.env }, var.tags)
+  cluster_name = "eks-${var.env}"
+  merged_tags  =  var.env
 }
 
 # IAM role for the EKS control plane
@@ -145,13 +145,6 @@ locals {
   )
 }
 
-# Kubernetes provider configured dynamically using the cluster we just created
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-  # Note: the provider will use the same AWS creds as Terraform (via aws provider)
-}
 
 # Create / manage the aws-auth configmap so nodes + admin roles can access the cluster
 resource "kubernetes_config_map" "aws_auth" {
