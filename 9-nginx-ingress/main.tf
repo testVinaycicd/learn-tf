@@ -11,18 +11,28 @@ module "vpc" {
 
 }
 
+# module "eks" {
+#   for_each    = var.eks
+#   source      = "./modules/eks"
+#   env         = var.env
+#   eks_version = each.value["eks_version"]
+#   node_groups = each.value["node_groups"]
+#   addons      = each.value["addons"]
+#   access      = each.value["access"]
+#   subnet_ids  = module.vpc["main"].subnets["app"]
+#   kms_arn     = var.kms_arn
+# }
+
 module "eks" {
   for_each    = var.eks
-  source      = "./modules/eks"
+  source      = "./modules/eks-test"
   env         = var.env
   eks_version = each.value["eks_version"]
   node_groups = each.value["node_groups"]
   addons      = each.value["addons"]
   access      = each.value["access"]
   subnet_ids  = module.vpc["main"].subnets["app"]
-  kms_arn     = var.kms_arn
 }
-
 
 
 # module "addons" {
