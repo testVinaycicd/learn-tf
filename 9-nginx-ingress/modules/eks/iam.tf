@@ -107,31 +107,6 @@ resource "aws_iam_role_policy_attachment" "k8s-prometheus-ec2-read-access" {
 }
 
 
-# resource "aws_iam_role" "cluster_autoscaler" {
-#   name = "${var.env}-eks-cluster-autoscaler-role-new"
-#
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Principal = {
-#           Service = "pods.eks.amazonaws.com"
-#         }
-#         Action = [
-#           "sts:AssumeRole",
-#           "sts:TagSession"
-#         ]
-#       }
-#     ]
-#   })
-#
-# }
-#
-# resource "aws_iam_role_policy_attachment" "cluster-autoscaler-policy" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAutoscalerPolicy"
-#   role       = aws_iam_role.cluster_autoscaler.name
-# }
 
 
 
