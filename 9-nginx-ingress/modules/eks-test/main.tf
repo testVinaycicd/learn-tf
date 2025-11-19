@@ -1,6 +1,6 @@
 locals {
   cluster_name = "eks-${var.env}"
-
+  merged_tags  = merge({ Name = local.cluster_name, Env = var.env }, var.tags)
 }
 
 # IAM role for the EKS control plane
@@ -15,7 +15,7 @@ resource "aws_iam_role" "eks_cluster" {
     }]
   })
 
-  tags = var.env
+  tags = local.merged_tags
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_attach" {
@@ -35,7 +35,7 @@ resource "aws_iam_role" "node_role" {
     }]
   })
 
-  tags = var.env
+  tags = local.merged_tags
 }
 
 resource "aws_iam_role_policy_attachment" "node_AmazonEKSWorkerNodePolicy" {
@@ -64,7 +64,7 @@ resource "aws_eks_cluster" "this" {
     public_access_cidrs     = ["0.0.0.0/0"]
   }
 
-  tags =  var.env
+  tags = local.merged_tags
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_attach
@@ -77,7 +77,7 @@ resource "aws_eks_addon" "addons" {
   cluster_name = aws_eks_cluster.this.name
   addon_name   = each.key
   # version left to default/latest — you can pass more info in var.addons value if needed
-  tags =  var.env
+  tags = local.merged_tags
   depends_on = [aws_eks_cluster.this]
 }
 
@@ -99,7 +99,7 @@ resource "aws_eks_node_group" "node_groups" {
   instance_types = lookup(each.value, "instance_types", ["t3.medium"])
   capacity_type  = lookup(each.value, "capacity_type", "ON_DEMAND")
 
-  tags = merge( var.env, { "eks:nodegroup" = each.key })
+  tags = merge(local.merged_tags, { "eks:nodegroup" = each.key })
 
   lifecycle {
     create_before_destroy = true
@@ -144,6 +144,7 @@ locals {
     ]
   )
 }
+
 
 
 # Create / manage the aws-auth configmap so nodes + admin roles can access the cluster
