@@ -79,7 +79,6 @@ resource "aws_eks_node_group" "main" {
   capacity_type   = each.value["capacity_type"]
 
   # Root volume size
-  disk_size = 50   # or whatever you want
 
   scaling_config {
     desired_size = each.value["min_nodes"]
