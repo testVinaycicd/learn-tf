@@ -22,23 +22,23 @@ resource "aws_eks_cluster" "main" {
   # }
 }
 
-# resource "aws_launch_template" "main" {
-#   for_each = var.node_groups
-#   name     = each.key
-#
-#   block_device_mappings {
-#     device_name = "/dev/xvda"
-#
-#     ebs {
-#       volume_size = 20
-#       encrypted   = true
-#       # kms_key_id  = var.kms_arn
-#
-#       kms_key_id  = aws_kms_key.eks_nodes.arn
-#     }
-#   }
-#
-# }
+resource "aws_launch_template" "main" {
+  for_each = var.node_groups
+  name     = each.key
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size = 20
+      # encrypted   = true
+      # # kms_key_id  = var.kms_arn
+      #
+      # kms_key_id  = aws_kms_key.eks_nodes.arn
+    }
+  }
+
+}
 
 resource "aws_eks_node_group" "main" {
   for_each        = var.node_groups
@@ -49,23 +49,16 @@ resource "aws_eks_node_group" "main" {
   instance_types  = each.value["instance_types"]
   capacity_type   = each.value["capacity_type"]
 
-  # launch_template {
-  #   name    = aws_launch_template.main[each.key].name
-  #   version = "$Latest"
-  # }
+  launch_template {
+    name    = aws_launch_template.main[each.key].name
+    version = "$Latest"
+  }
 
   scaling_config {
     desired_size = each.value["min_nodes"]
     max_size     = each.value["max_nodes"]
     min_size     = each.value["min_nodes"]
   }
-
-  # node_group_defaults {
-  #   root_volume_encryption {
-  #     enabled = true
-  #     kms_key_id  = aws_kms_key.eks_nodes.arn
-  #   }
-  # }
 
   lifecycle {
     ignore_changes = [scaling_config]
