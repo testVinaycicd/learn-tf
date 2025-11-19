@@ -41,7 +41,7 @@ resource "null_resource" "set-secret" {
 # }
 
 resource "helm_release" "ingress" {
-  depends_on = [null_resource.kubeconfig]
+  depends_on = [null_resource.kubeconfig, helm_release.external-dns]
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
@@ -132,7 +132,6 @@ resource "helm_release" "external-dns" {
   depends_on = [
 
     null_resource.kubeconfig,
-    helm_release.ingress
   ]
 
 
