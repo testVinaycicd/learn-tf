@@ -51,6 +51,10 @@ resource "aws_iam_role_policy_attachment" "node_AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
+data "http" "myip" {
+  url = "https://checkip.amazonaws.com/"
+}
+
 # EKS Cluster
 resource "aws_eks_cluster" "this" {
   name     = local.cluster_name
@@ -58,15 +62,15 @@ resource "aws_eks_cluster" "this" {
   version  = var.eks_version
 
   access_config {
-    authentication_mode                         = "API"
+    authentication_mode                         = "API_AND_CONFIG_MAP"
     bootstrap_cluster_creator_admin_permissions = true
   }
 
   vpc_config {
     subnet_ids = var.subnet_ids
-    endpoint_private_access = false
+    endpoint_private_access = true
     endpoint_public_access  = true
-    public_access_cidrs     = ["0.0.0.0/0"]
+    public_access_cidrs     = ["${chomp(data.http.myip.response_body)}/32"]
   }
 
 
