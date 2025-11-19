@@ -32,9 +32,9 @@ resource "aws_launch_template" "main" {
     ebs {
       volume_size = 20
       encrypted   = true
-      kms_key_id  = var.kms_arn
+      # kms_key_id  = var.kms_arn
 
-      # kms_key_id  = aws_kms_key.eks_nodes.arn
+      kms_key_id  = aws_kms_key.eks_nodes.arn
     }
   }
 
