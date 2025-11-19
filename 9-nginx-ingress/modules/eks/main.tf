@@ -82,9 +82,9 @@ resource "aws_eks_node_group" "main" {
   disk_size = 50   # or whatever you want
 
   scaling_config {
-    desired_size = each.value["desired_size"]
-    min_size     = each.value["min_size"]
-    max_size     = each.value["max_size"]
+    desired_size = each.value["min_nodes"]
+    min_size     = each.value["min_nodes"]
+    max_size     = each.value["max_nodes"]
   }
 
   # THIS IS THE MAGIC PART – minimal launch template just for KMS
