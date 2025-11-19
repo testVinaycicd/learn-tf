@@ -52,10 +52,10 @@ resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOn
   role       = aws_iam_role.node-role.name
 }
 
-resource "aws_iam_instance_profile" "node_instance_profile" {
-  name = "${var.env}-eks-node-instance-profile"
-  role = aws_iam_role.node-role.name
-}
+# resource "aws_iam_instance_profile" "node_instance_profile" {
+#   name = "${var.env}-eks-node-instance-profile"
+#   role = aws_iam_role.node-role.name
+# }
 
 resource "aws_iam_role" "external-dns" {
   name = "${var.env}-eks-external-dns-role"
