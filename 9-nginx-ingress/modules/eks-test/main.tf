@@ -227,7 +227,7 @@ resource "aws_eks_node_group" "node_groups" {
   for_each = var.node_groups
 
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${local.cluster_name}-${each.key}-2"
+  node_group_name = "${local.cluster_name}-${each.key}-3"
   node_role_arn   = aws_iam_role.node_role.arn
   subnet_ids      = var.subnet_ids
 
