@@ -91,3 +91,4 @@ resource "aws_route" "ngw" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = element(aws_nat_gateway.main.*.id, count.index)
 }
+

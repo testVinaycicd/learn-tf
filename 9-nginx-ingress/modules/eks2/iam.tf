@@ -55,6 +55,8 @@ data "aws_iam_policy_document" "nodes_assume" {
   }
 }
 
+
+
 resource "aws_iam_role" "nodes" {
   name               = "${var.cluster_name}-node-role"
   assume_role_policy = data.aws_iam_policy_document.nodes_assume.json
