@@ -189,7 +189,6 @@ resource "aws_iam_role_policy_attachment" "k8s-prometheus-ec2-read-access" {
 resource "aws_eks_cluster" "this" {
   name     = local.cluster_name
   role_arn = aws_iam_role.eks_cluster.arn
-  version  = var.eks_version
 
   access_config {
     authentication_mode                         = "API_AND_CONFIG_MAP"
