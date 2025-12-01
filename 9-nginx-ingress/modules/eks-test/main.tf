@@ -98,84 +98,84 @@ resource "aws_iam_role" "k8s-prometheus" {
   })
 }
 
-data "aws_iam_policy_document" "cluster_autoscaler" {
-  version = "2012-10-17"
-
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "autoscaling:SetDesiredCapacity",
-      "autoscaling:TerminateInstanceInAutoScalingGroup"
-    ]
-
-    resources = ["*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:ResourceTag/k8s.io/cluster-autoscaler/enabled"
-      values   = ["true"]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:ResourceTag/k8s.io/cluster-autoscaler/my-cluster"
-      values   = ["owned"]
-    }
-  }
-
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "autoscaling:DescribeAutoScalingGroups",
-      "autoscaling:DescribeAutoScalingInstances",
-      "autoscaling:DescribeLaunchConfigurations",
-      "autoscaling:DescribeScalingActivities",
-      "autoscaling:DescribeTags",
-      "ec2:DescribeImages",
-      "ec2:DescribeInstanceTypes",
-      "ec2:DescribeLaunchTemplateVersions",
-      "ec2:GetInstanceTypesFromInstanceRequirements",
-      "eks:DescribeNodegroup"
-    ]
-
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_role" "cluster_autoscaler" {
-  name = "${var.env}-eks-cluster-autoscaler-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "pods.eks.amazonaws.com"
-        }
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-      }
-    ]
-  })
-}
-
-
-resource "aws_iam_policy" "cluster_autoscaler" {
-  name        = "${var.env}-cluster-autoscaler-policy"
-  description = "IAM policy for the Kubernetes cluster autoscaler"
-  policy      = data.aws_iam_policy_document.cluster_autoscaler.json
-}
+# data "aws_iam_policy_document" "cluster_autoscaler" {
+#   version = "2012-10-17"
+#
+#   statement {
+#     effect = "Allow"
+#
+#     actions = [
+#       "autoscaling:SetDesiredCapacity",
+#       "autoscaling:TerminateInstanceInAutoScalingGroup"
+#     ]
+#
+#     resources = ["*"]
+#
+#     condition {
+#       test     = "StringEquals"
+#       variable = "aws:ResourceTag/k8s.io/cluster-autoscaler/enabled"
+#       values   = ["true"]
+#     }
+#
+#     condition {
+#       test     = "StringEquals"
+#       variable = "aws:ResourceTag/k8s.io/cluster-autoscaler/my-cluster"
+#       values   = ["owned"]
+#     }
+#   }
+#
+#   statement {
+#     effect = "Allow"
+#
+#     actions = [
+#       "autoscaling:DescribeAutoScalingGroups",
+#       "autoscaling:DescribeAutoScalingInstances",
+#       "autoscaling:DescribeLaunchConfigurations",
+#       "autoscaling:DescribeScalingActivities",
+#       "autoscaling:DescribeTags",
+#       "ec2:DescribeImages",
+#       "ec2:DescribeInstanceTypes",
+#       "ec2:DescribeLaunchTemplateVersions",
+#       "ec2:GetInstanceTypesFromInstanceRequirements",
+#       "eks:DescribeNodegroup"
+#     ]
+#
+#     resources = ["*"]
+#   }
+# }
+#
+# resource "aws_iam_role" "cluster_autoscaler" {
+#   name = "${var.env}-eks-cluster-autoscaler-role"
+#
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Principal = {
+#           Service = "pods.eks.amazonaws.com"
+#         }
+#         Action = [
+#           "sts:AssumeRole",
+#           "sts:TagSession"
+#         ]
+#       }
+#     ]
+#   })
+# }
 
 
-resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach" {
-  role       = aws_iam_role.cluster_autoscaler.name
-  policy_arn = aws_iam_policy.cluster_autoscaler.arn
-}
+# resource "aws_iam_policy" "cluster_autoscaler" {
+#   name        = "${var.env}-cluster-autoscaler-policy"
+#   description = "IAM policy for the Kubernetes cluster autoscaler"
+#   policy      = data.aws_iam_policy_document.cluster_autoscaler.json
+# }
+#
+#
+# resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach" {
+#   role       = aws_iam_role.cluster_autoscaler.name
+#   policy_arn = aws_iam_policy.cluster_autoscaler.arn
+# }
 
 
 
@@ -289,9 +289,9 @@ resource "aws_eks_pod_identity_association" "k8s-kubernetes" {
   role_arn        = aws_iam_role.k8s-prometheus.arn
 }
 
-resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
-  cluster_name    = aws_eks_cluster.this.name
-  namespace       = "kube-system"
-  service_account = "cluster-autoscaler-aws-cluster-autoscaler"
-  role_arn        = aws_iam_role.cluster_autoscaler.arn
-}
+# resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
+#   cluster_name    = aws_eks_cluster.this.name
+#   namespace       = "kube-system"
+#   service_account = "cluster-autoscaler-aws-cluster-autoscaler"
+#   role_arn        = aws_iam_role.cluster_autoscaler.arn
+# }
