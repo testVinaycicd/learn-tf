@@ -1,7 +1,3 @@
-data "http" "myip" {
-  url = "https://checkip.amazonaws.com/"
-}
-
 locals {
   cluster_name = "eks-${var.env}"
   merged_tags  = merge({ Name = local.cluster_name, Env = var.env }, var.tags)
@@ -55,151 +51,22 @@ resource "aws_iam_role_policy_attachment" "node_AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
-resource "aws_iam_role" "external-dns" {
-  name = "${var.env}-eks-external-dns-role"
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "pods.eks.amazonaws.com"
-        },
-        "Action" : [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "external-dns-route53-full-access" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
-  role       = aws_iam_role.external-dns.name
-}
-
-resource "aws_iam_role" "k8s-prometheus" {
-  name = "${var.env}-eks-prometheus-server-role"
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "pods.eks.amazonaws.com"
-        },
-        "Action" : [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-      }
-    ]
-  })
-}
-
-# data "aws_iam_policy_document" "cluster_autoscaler" {
-#   version = "2012-10-17"
-#
-#   statement {
-#     effect = "Allow"
-#
-#     actions = [
-#       "autoscaling:SetDesiredCapacity",
-#       "autoscaling:TerminateInstanceInAutoScalingGroup"
-#     ]
-#
-#     resources = ["*"]
-#
-#     condition {
-#       test     = "StringEquals"
-#       variable = "aws:ResourceTag/k8s.io/cluster-autoscaler/enabled"
-#       values   = ["true"]
-#     }
-#
-#     condition {
-#       test     = "StringEquals"
-#       variable = "aws:ResourceTag/k8s.io/cluster-autoscaler/my-cluster"
-#       values   = ["owned"]
-#     }
-#   }
-#
-#   statement {
-#     effect = "Allow"
-#
-#     actions = [
-#       "autoscaling:DescribeAutoScalingGroups",
-#       "autoscaling:DescribeAutoScalingInstances",
-#       "autoscaling:DescribeLaunchConfigurations",
-#       "autoscaling:DescribeScalingActivities",
-#       "autoscaling:DescribeTags",
-#       "ec2:DescribeImages",
-#       "ec2:DescribeInstanceTypes",
-#       "ec2:DescribeLaunchTemplateVersions",
-#       "ec2:GetInstanceTypesFromInstanceRequirements",
-#       "eks:DescribeNodegroup"
-#     ]
-#
-#     resources = ["*"]
-#   }
-# }
-#
-# resource "aws_iam_role" "cluster_autoscaler" {
-#   name = "${var.env}-eks-cluster-autoscaler-role"
-#
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Principal = {
-#           Service = "pods.eks.amazonaws.com"
-#         }
-#         Action = [
-#           "sts:AssumeRole",
-#           "sts:TagSession"
-#         ]
-#       }
-#     ]
-#   })
-# }
-
-
-# resource "aws_iam_policy" "cluster_autoscaler" {
-#   name        = "${var.env}-cluster-autoscaler-policy"
-#   description = "IAM policy for the Kubernetes cluster autoscaler"
-#   policy      = data.aws_iam_policy_document.cluster_autoscaler.json
-# }
-#
-#
-# resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach" {
-#   role       = aws_iam_role.cluster_autoscaler.name
-#   policy_arn = aws_iam_policy.cluster_autoscaler.arn
-# }
-
-
-
-resource "aws_iam_role_policy_attachment" "k8s-prometheus-ec2-read-access" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
-  role       = aws_iam_role.k8s-prometheus.name
-}
-
-
 # EKS Cluster
 resource "aws_eks_cluster" "this" {
   name     = local.cluster_name
   role_arn = aws_iam_role.eks_cluster.arn
+  version  = var.eks_version
 
   access_config {
-    authentication_mode                         = "API_AND_CONFIG_MAP"
+    authentication_mode                         = "API"
     bootstrap_cluster_creator_admin_permissions = true
   }
 
   vpc_config {
     subnet_ids = var.subnet_ids
-    endpoint_private_access = true
+    endpoint_private_access = false
     endpoint_public_access  = true
-    public_access_cidrs     = ["${chomp(data.http.myip.response_body)}/32"]
+    public_access_cidrs     = ["0.0.0.0/0"]
   }
 
 
@@ -226,7 +93,7 @@ resource "aws_eks_node_group" "node_groups" {
   for_each = var.node_groups
 
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${local.cluster_name}-${each.key}-3"
+  node_group_name = "${local.cluster_name}-${each.key}"
   node_role_arn   = aws_iam_role.node_role.arn
   subnet_ids      = var.subnet_ids
 
@@ -253,6 +120,8 @@ resource "aws_eks_node_group" "node_groups" {
   ]
 }
 
+# Data source to create a kube token for the kubernetes provider
+
 
 resource "aws_eks_access_entry" "main" {
   for_each          = var.access
@@ -273,24 +142,3 @@ resource "aws_eks_access_policy_association" "main" {
     namespaces = each.value["access_scope_namespaces"]
   }
 }
-
-resource "aws_eks_pod_identity_association" "external-dns" {
-  cluster_name    = aws_eks_cluster.this.name
-  namespace       = "default"
-  service_account = "external-dns"
-  role_arn        = aws_iam_role.external-dns.arn
-}
-
-resource "aws_eks_pod_identity_association" "k8s-kubernetes" {
-  cluster_name    = aws_eks_cluster.this.name
-  namespace       = "default"
-  service_account = "kube-prom-stack-kube-prome-prometheus"
-  role_arn        = aws_iam_role.k8s-prometheus.arn
-}
-
-# resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
-#   cluster_name    = aws_eks_cluster.this.name
-#   namespace       = "kube-system"
-#   service_account = "cluster-autoscaler-aws-cluster-autoscaler"
-#   role_arn        = aws_iam_role.cluster_autoscaler.arn
-# }
