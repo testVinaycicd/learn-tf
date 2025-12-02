@@ -217,44 +217,44 @@ resource "aws_iam_role_policy_attachment" "attach_cluster_autoscaler_policy" {
 }
 
 # Kubernetes ServiceAccount (no IRSA annotation)
-resource "kubernetes_service_account" "cluster_autoscaler" {
-  metadata {
-    name      = "cluster-autoscaler"
-    namespace = "kube-system"
-  }
-}
-
-# Helm install for Cluster Autoscaler — depends_on ensures IAM role + policy exist
-resource "helm_release" "cluster_autoscaler" {
-  name       = "cluster-autoscaler"
-  repository = "https://kubernetes.github.io/autoscaler"
-  chart      = "cluster-autoscaler"
-  namespace  = "kube-system"
-
-  set = [
-    {
-      name  = "serviceAccount.create"
-      value = "false"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
-    },
-    {
-      name  = "autoDiscovery.clusterName"
-      value = local.cluster_name
-    },
-    {
-      name  = "awsRegion"
-      value = "us-east-1"
-    }
-  ]
-
-  depends_on = [
-    aws_iam_role_policy_attachment.attach_cluster_autoscaler_policy,
-    kubernetes_service_account.cluster_autoscaler
-  ]
-}
+# resource "kubernetes_service_account" "cluster_autoscaler" {
+#   metadata {
+#     name      = "cluster-autoscaler"
+#     namespace = "kube-system"
+#   }
+# }
+#
+# # Helm install for Cluster Autoscaler — depends_on ensures IAM role + policy exist
+# resource "helm_release" "cluster_autoscaler" {
+#   name       = "cluster-autoscaler"
+#   repository = "https://kubernetes.github.io/autoscaler"
+#   chart      = "cluster-autoscaler"
+#   namespace  = "kube-system"
+#
+#   set = [
+#     {
+#       name  = "serviceAccount.create"
+#       value = "false"
+#     },
+#     {
+#       name  = "serviceAccount.name"
+#       value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
+#     },
+#     {
+#       name  = "autoDiscovery.clusterName"
+#       value = local.cluster_name
+#     },
+#     {
+#       name  = "awsRegion"
+#       value = "us-east-1"
+#     }
+#   ]
+#
+#   depends_on = [
+#     aws_iam_role_policy_attachment.attach_cluster_autoscaler_policy,
+#     kubernetes_service_account.cluster_autoscaler
+#   ]
+# }
 
 ##########################################level 2##########################################
 
@@ -284,7 +284,7 @@ resource "aws_iam_role_policy_attachment" "external-dns-route53-full-access" {
 
 
 resource "aws_eks_pod_identity_association" "external-dns" {
-  cluster_name    = aws_eks_cluster.this.name
+  cluster_name    = local.cluster_name
   namespace       = "default"
   service_account = "external-dns"
   role_arn        = aws_iam_role.external-dns.arn

@@ -103,7 +103,44 @@ resource "null_resource" "cert-manager-cluster-issuer" {
 
 
 
+resource "kubernetes_service_account" "cluster_autoscaler" {
+  metadata {
+    name      = "cluster-autoscaler"
+    namespace = "kube-system"
+  }
+}
 
+# Helm install for Cluster Autoscaler — depends_on ensures IAM role + policy exist
+resource "helm_release" "cluster_autoscaler" {
+  name       = "cluster-autoscaler"
+  repository = "https://kubernetes.github.io/autoscaler"
+  chart      = "cluster-autoscaler"
+  namespace  = "kube-system"
+
+  set = [
+    {
+      name  = "serviceAccount.create"
+      value = "false"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
+    },
+    {
+      name  = "autoDiscovery.clusterName"
+      value = var.cluster_name
+    },
+    {
+      name  = "awsRegion"
+      value = "us-east-1"
+    }
+  ]
+
+  depends_on = [
+    null_resource.kubeconfig,null_resource.tesd-config,
+    kubernetes_service_account.cluster_autoscaler
+  ]
+}
 
 
 
