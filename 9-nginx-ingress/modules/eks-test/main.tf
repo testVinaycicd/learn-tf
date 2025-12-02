@@ -237,6 +237,10 @@ resource "helm_release" "cluster_autoscaler" {
       value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
     },
     {
+      name  = "autoDiscovery.clusterName"
+      value = local.cluster_name
+    },
+    {
       name  = "awsRegion"
       value = "us-east-1"
     }
