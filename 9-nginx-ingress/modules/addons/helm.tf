@@ -50,7 +50,7 @@ resource "null_resource" "metrics-server" {
 # }
 
 resource "helm_release" "ingress" {
-  depends_on = [null_resource.kubeconfig, helm_release.external-dns]
+  depends_on = [null_resource.kubeconfig, helm_release.external-dns,helm_release.cluster_autoscaler]
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
@@ -70,7 +70,7 @@ resource "helm_release" "ingress" {
 
 
 resource "helm_release" "cert-manager" {
-  depends_on = [null_resource.kubeconfig, null_resource.tesd-config]
+  depends_on = [null_resource.kubeconfig, helm_release.ingress]
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
