@@ -226,25 +226,6 @@ resource "helm_release" "external_secrets_operator" {
   ]
 }
 
-resource "helm_release" "psmdb_operator" {
-  depends_on = [helm_release.external_secrets_operator]
-
-  name       = "psmdb-operator"
-  namespace  = "default"
-  repository = "https://percona.github.io/percona-helm-charts/"
-  chart      = "psmdb-operator"
-  version    = "1.15.0" # keep pinned; upgrade intentionally
-
-  # If you had a values.yaml in kustomize, put the same content here:
-  # values = [
-  #   file("${path.module}/values-operator.yaml")
-  # ]
-
-  # Safety: wait for resources/CRDs to settle before continuing
-  wait          = true
-  timeout       = 600
-  recreate_pods = false
-}
 
 
 # 1) EKS managed add-on (NO service_account_role_arn for Pod Identity)
@@ -288,7 +269,7 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
 
 # 3) Bind the role to the add-on's controller SA via Pod Identity
 resource "aws_eks_pod_identity_association" "ebs_csi" {
-  cluster_name    = "mikey-eks"
+  cluster_name    = var.cluster_name
   namespace       = "kube-system"
   service_account = "ebs-csi-controller-sa"
   role_arn        = aws_iam_role.ebs_csi_pi.arn

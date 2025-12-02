@@ -1,7 +1,7 @@
 
 variable "cluster_name" {
   type        = string
-  default     = "dev"
+  default     = "eks-dev"
 }
 
 variable "vault_token" {
