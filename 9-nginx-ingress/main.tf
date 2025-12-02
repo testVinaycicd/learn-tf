@@ -35,12 +35,12 @@ module "eks" {
 }
 
 
-# module "addons" {
-#   source     = "./modules/addons"
-#   depends_on = [module.eks]      # ensures cluster exists before planning this module
-#   vault_token = var.vault_token
-#   cluster_name = var.env
-# }
+module "addons" {
+  source     = "./modules/addons"
+  depends_on = [module.eks]      # ensures cluster exists before planning this module
+  vault_token = var.vault_token
+  cluster_name = var.env
+}
 
 # module "mysql" {
 #   source  = "modules/mysql"
