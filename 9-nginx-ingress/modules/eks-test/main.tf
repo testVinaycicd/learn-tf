@@ -123,13 +123,13 @@ resource "aws_eks_node_group" "node_groups" {
 # Data source to create a kube token for the kubernetes provider
 
 
-# resource "aws_eks_access_entry" "main" {
-#   for_each          = var.access
-#   cluster_name      = aws_eks_cluster.this.name
-#   principal_arn     = each.value["role"]
-#   # kubernetes_groups = each.value["kubernetes_groups"]
-#   type              = "STANDARD"
-# }
+resource "aws_eks_access_entry" "main" {
+  for_each          = var.access
+  cluster_name      = aws_eks_cluster.this.name
+  principal_arn     = each.value["role"]
+  # kubernetes_groups = each.value["kubernetes_groups"]
+  type              = "STANDARD"
+}
 
 resource "aws_eks_access_policy_association" "main" {
   for_each      = var.access
