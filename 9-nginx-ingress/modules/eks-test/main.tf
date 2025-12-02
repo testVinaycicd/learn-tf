@@ -237,10 +237,6 @@ resource "helm_release" "cluster_autoscaler" {
       value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
     },
     {
-      name  = "extraArgs"
-      value = "--cloud-provider=aws --v=4 --skip-nodes-with-local-storage=false --balance-similar-node-groups --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/${local.cluster_name}"
-    },
-    {
       name  = "awsRegion"
       value = "us-east-1"
     }
