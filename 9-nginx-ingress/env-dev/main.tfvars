@@ -8,8 +8,8 @@ db_instances = {
     subnet_ref       = "db"
     port             = 27017
     app_cidr = {
-      app-subnet-1 = "11.200.4.0/24"
-      app-subnet-2 = "11.200.5.0/24"
+      app-subnet-1 = "11.0.4.0/24"
+      app-subnet-2 = "11.0.5.0/24"
     }
   }
   # redis = {
