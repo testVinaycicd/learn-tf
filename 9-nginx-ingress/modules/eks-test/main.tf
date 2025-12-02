@@ -285,7 +285,7 @@ resource "aws_iam_role_policy_attachment" "external-dns-route53-full-access" {
 
 resource "aws_eks_pod_identity_association" "external-dns" {
   cluster_name    = local.cluster_name
-  namespace       = "default"
+  namespace       = "kube-system"
   service_account = "external-dns"
   role_arn        = aws_iam_role.external-dns.arn
 }
