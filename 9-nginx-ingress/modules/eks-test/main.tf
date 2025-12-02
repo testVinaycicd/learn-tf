@@ -227,24 +227,24 @@ resource "helm_release" "cluster_autoscaler" {
   chart      = "cluster-autoscaler"
   namespace  = "kube-system"
 
-  set {
-    name  = "serviceAccount.create"
-    value = "false"
-  }
-  set {
-    name  = "serviceAccount.name"
-    value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
-  }
-
-  set {
-    name  = "extraArgs"
-    value = "--cloud-provider=aws --v=4 --skip-nodes-with-local-storage=false --balance-similar-node-groups --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/${local.cluster_name}"
-  }
-
-  set {
-    name  = "awsRegion"
-    value = "us-east-1"
-  }
+  set = [
+    {
+      name  = "serviceAccount.create"
+      value = "false"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
+    },
+    {
+      name  = "extraArgs"
+      value = "--cloud-provider=aws --v=4 --skip-nodes-with-local-storage=false --balance-similar-node-groups --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/${local.cluster_name}"
+    },
+    {
+      name  = "awsRegion"
+      value = "us-east-1"
+    }
+  ]
 
   depends_on = [
     aws_iam_role_policy_attachment.attach_cluster_autoscaler_policy,
