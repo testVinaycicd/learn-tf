@@ -247,3 +247,37 @@ resource "helm_release" "cluster_autoscaler" {
     kubernetes_service_account.cluster_autoscaler
   ]
 }
+
+##########################################level 2##########################################
+
+resource "aws_iam_role" "external-dns" {
+  name = "${var.env}-eks-external-dns-role"
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "pods.eks.amazonaws.com"
+        },
+        "Action" : [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "external-dns-route53-full-access" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
+  role       = aws_iam_role.external-dns.name
+}
+
+
+resource "aws_eks_pod_identity_association" "external-dns" {
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = "default"
+  service_account = "external-dns"
+  role_arn        = aws_iam_role.external-dns.arn
+}
