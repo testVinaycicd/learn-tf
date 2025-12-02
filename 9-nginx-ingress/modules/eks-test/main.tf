@@ -142,3 +142,112 @@ resource "aws_eks_access_policy_association" "main" {
     namespaces = each.value["access_scope_namespaces"]
   }
 }
+
+
+
+
+############################################
+
+resource "aws_iam_policy" "cluster_autoscaler_policy" {
+  name        = "${local.cluster_name}-cluster-autoscaler-policy"
+  description = "Policy for Kubernetes Cluster Autoscaler - limited to ASGs tagged for this cluster."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid = "DescribeAndRead"
+        Effect = "Allow"
+        Action = [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeTags",
+          "ec2:DescribeInstances",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeLaunchTemplateVersions",
+          "ec2:DescribeLaunchTemplates"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid = "ModifyASGScopedByTag"
+        Effect = "Allow"
+        Action = [
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            # Require that the autoscaling group resource has tag:
+            # k8s.io/cluster-autoscaler/<local.cluster_name> = owned
+            "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "cluster_autoscaler_pod_role" {
+  name = "${local.cluster_name}-cluster-autoscaler-pod-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = "sts:AssumeRole"
+      Principal = {
+        AWS = aws_iam_role.node_role.arn
+      }
+    }]
+  })
+
+  tags = local.merged_tags
+}
+
+resource "aws_iam_role_policy_attachment" "attach_cluster_autoscaler_policy" {
+  role       = aws_iam_role.cluster_autoscaler_pod_role.name
+  policy_arn = aws_iam_policy.cluster_autoscaler_policy.arn
+}
+
+# Kubernetes ServiceAccount (no IRSA annotation)
+resource "kubernetes_service_account" "cluster_autoscaler" {
+  metadata {
+    name      = "cluster-autoscaler"
+    namespace = "kube-system"
+  }
+}
+
+# Helm install for Cluster Autoscaler — depends_on ensures IAM role + policy exist
+resource "helm_release" "cluster_autoscaler" {
+  name       = "cluster-autoscaler"
+  repository = "https://kubernetes.github.io/autoscaler"
+  chart      = "cluster-autoscaler"
+  namespace  = "kube-system"
+
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+  }
+  set {
+    name  = "serviceAccount.name"
+    value = kubernetes_service_account.cluster_autoscaler.metadata[0].name
+  }
+
+  set {
+    name  = "extraArgs"
+    value = "--cloud-provider=aws --v=4 --skip-nodes-with-local-storage=false --balance-similar-node-groups --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/${local.cluster_name}"
+  }
+
+  set {
+    name  = "awsRegion"
+    value = "us-east-1"
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.attach_cluster_autoscaler_policy,
+    kubernetes_service_account.cluster_autoscaler
+  ]
+}
