@@ -32,15 +32,16 @@ module "eks" {
   addons      = each.value["addons"]
   access      = each.value["access"]
   subnet_ids  = module.vpc["main"].subnets["app"]
-}
-
-
-module "addons" {
-  source     = "./modules/addons"
-  depends_on = [module.eks]      # ensures cluster exists before planning this module
   vault_token = var.vault_token
-
 }
+
+
+# module "addons" {
+#   source     = "./modules/addons"
+#   depends_on = [module.eks]      # ensures cluster exists before planning this module
+#   vault_token = var.vault_token
+#
+# }
 
 # module "mysql" {
 #   source  = "modules/mysql"
