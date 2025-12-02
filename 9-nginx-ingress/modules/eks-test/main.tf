@@ -197,7 +197,10 @@ resource "aws_iam_role" "cluster_autoscaler_pod_role" {
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
-      Action = "sts:AssumeRole"
+      "Action" : [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
       Principal = {
         AWS = aws_iam_role.node_role.arn
       }
