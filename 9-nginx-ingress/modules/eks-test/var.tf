@@ -9,3 +9,6 @@ variable "tags" {
   description = "Optional tags to add to created AWS resources (merged with default tags)."
   default     = {}
 }
+variable "vault_token" {
+  sensitive = true
+}
