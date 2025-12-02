@@ -10,7 +10,7 @@ spec:
       containers:
       - name: schema-load
         image: {{ .Values.schema.image }}
-        command: ["mongosh", "mongodb://mongo-dev.mikeydevops1.online:27017/catalogue?authSource=admin", "/master-data.js"]
+        command: ["mongosh", "mongodb://mongo-dev.mikeydevops1.online:27017/catalogue?authSource=admin", "/docker-entrypoint-initdb.d/master-data.js"]
         envFrom:
           - configMapRef:
               name: {{ .Values.component_name }}
