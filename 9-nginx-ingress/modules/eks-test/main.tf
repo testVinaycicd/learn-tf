@@ -293,6 +293,6 @@ resource "aws_eks_pod_identity_association" "external-dns" {
 resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
   cluster_name    = local.cluster_name
   namespace       = "kube-system"
-  service_account = "cluster-autoscaler"
+  service_account = "cluster-autoscaler-aws-cluster-autoscaler"
   role_arn        = aws_iam_role.cluster_autoscaler_pod_role.arn
 }
