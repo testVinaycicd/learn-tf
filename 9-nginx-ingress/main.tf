@@ -77,3 +77,13 @@ module "mongodb" {
   # private_subnet_ids = module.vpc.private_subnet_ids
 
 }
+
+# module "redis" {
+#   source = "./modules/redis"
+#   engine = ""
+#   subnet_ids = [module.vpc["main"].subnet_ids["db-subnet-1"],module.vpc["main"].subnet_ids["db-subnet-2"],]
+# }
+
+output "vpc_subnet_id" {
+  value = [module.vpc["main"].subnet_ids["db-subnet-1"],module.vpc["main"].subnet_ids["db-subnet-2"]]
+}
