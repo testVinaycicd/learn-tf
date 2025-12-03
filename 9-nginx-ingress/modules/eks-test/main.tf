@@ -129,6 +129,7 @@ resource "aws_eks_access_entry" "main" {
   principal_arn     = each.value["role"]
   # kubernetes_groups = each.value["kubernetes_groups"]
   type              = "STANDARD"
+  depends_on = [aws_eks_cluster.this]
 }
 
 resource "aws_eks_access_policy_association" "main" {
