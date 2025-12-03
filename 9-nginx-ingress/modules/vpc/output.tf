@@ -23,3 +23,7 @@ output "private_subnet_ids" {
 
 
 
+output "subnet_ids" {
+  description = "Map of subnet name => subnet id (keys are the same names you passed in var.subnets)"
+  value       = { for k, s in aws_subnet.main : k => s.id }
+}
