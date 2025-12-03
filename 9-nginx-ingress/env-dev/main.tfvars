@@ -49,6 +49,34 @@ db_instances = {
 
 }
 
+redis = {
+  # dev environment - low-cost, single AZ (not recommended for prod)
+  name                     = "roboshop-redis-dev"
+  automatic_failover_enabled = false
+  at_rest_encryption_enabled = true
+  transit_encryption_enabled = false
+  multi_az_enabled         = false
+  engine                   = "redis"
+  engine_version           = "7.0"
+  port                     = 6379
+  kms_key_id               = "974d6e02b7ddde3ad55eda70ca66e1787e8d38962e2ca511fa2d8fd4c8652bae"
+  maintenance_window       = "sun:05:00-sun:07:00"
+  node_type                = "cache.t4g.small"
+  notification_topic_arn   = ""
+  num_cache_clusters       = 1
+  snapshot_retention_limit = 0
+  snapshot_window          = "03:00-04:00"
+  subnet_group_name        = "roboshop-redis-subnet-group"   # existing or will be created if create_subnet_group=true
+  parameter_group_name     = null
+  environment_name         = "dev"
+  allow_security_group_ids = ["sg-0abcde12345f67890"]        # EKS worker node SG (replace)
+  allow_cidrs              = ["11.0.5.0/24","11.0.4.0/24"]
+  create_subnet_group      = false
+  subnet_ids               = ["subnet-0123456789abcdef0","subnet-0fedcba9876543210"]
+  vpc_id                   = ""
+
+}
+
 zone_id                = "Z09180393TY9K7UQDKE5E"
 # vpc_security_group_ids = ["sg-0ea2a448676b70f53"]
 env                    = "dev"
@@ -119,27 +147,27 @@ bastion_ssh_nodes = {
 kms_arn = "arn:aws:kms:us-east-1:886436958775:key/1082b02e-aba2-4c65-9bfd-2799fcdd513f"
 
 
-aws_region = "us-east-1"
+# aws_region = "us-east-1"
+#
+#
+# name = "terraform-learning-1"
 
-
-name = "terraform-learning-1"
-
-access = {
-  workstation = {
-    role                    = "arn:aws:iam::886436958775:role/workstation-role"
-    policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-    access_scope_type       = "cluster"
-    access_scope_namespaces = []
-    kubernetes_groups       = []
-  }
-  github_runner = {
-    role                    = "arn:aws:iam::886436958775:role/github-runner-role"
-    policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-    access_scope_type       = "cluster"
-    access_scope_namespaces = []
-    kubernetes_groups       = []
-  }
-}
+# access = {
+#   workstation = {
+#     role                    = "arn:aws:iam::886436958775:role/workstation-role"
+#     policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+#     access_scope_type       = "cluster"
+#     access_scope_namespaces = []
+#     kubernetes_groups       = []
+#   }
+#   github_runner = {
+#     role                    = "arn:aws:iam::886436958775:role/github-runner-role"
+#     policy_arn              = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+#     access_scope_type       = "cluster"
+#     access_scope_namespaces = []
+#     kubernetes_groups       = []
+#   }
+# }
 
 
 eks = {
